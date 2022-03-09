@@ -147,17 +147,26 @@ export class AudioManager {
    * @param to 1 = 100%, 0 = 0%
    * @param duration In second
    */
+  protected _processVolumeArray = []
+
   public async fade(from: number, to: number, duration = 1): Promise<any> {
-    log("fade")
+    log("fade >", from, to, this.options)
+
     // play in case is not playing
     this.play()
-    await this.processVolume(from, to, duration)
-    log("fade ended!")
+
+    const newProcess = this.processVolume(from, to, duration);
+    this._processVolumeArray.forEach(process => process.clear?.())
+    this._processVolumeArray.push(newProcess)
+
+    await newProcess.promise()
+    log("fade ended!", this.$audio.volume)
   }
 
   public async fadeIn(duration = 1): Promise<any> {
     log("fadeIn")
     this.play()
+    
     await this.processVolume(0, this.options.volume, duration)
     log("fadeIn ended!")
   }
@@ -179,64 +188,79 @@ export class AudioManager {
 
   protected _raf
   protected _count = 0
+  protected _isInProcess: boolean
+
+  /**
+   *
+   * @param from
+   * @param to
+   * @param duration
+   * @returns
+   */
 
   protected processVolume(from: number, to: number, duration = 1) {
+    // if (this._isInProcess) {
+    //   log("is in process, reject")
+    // }
 
     const limitFrom = Math.max(0, Math.min(from, 1))
     const limitTo = Math.max(0, Math.min(to, 1))
 
-    return new Promise((resolve: any) => {
-      // clear interval
-      const clear = () => {
-        log("clear interval")
+    let clear;
+    const promise = () => new Promise((resolve: any) => {
+        clear = () => {
         cancelAnimationFrame(this._raf)
+        log("CLEAR > this.$audio.volume", this.$audio.volume)
         resolve()
+        this._isInProcess = false
       }
+
       // chose volume direction
-      //const type = from <= to ? "increment" : "decrement"
       const isIncrement = limitFrom <= limitTo
+      this.$audio.volume = this._count = this._isInProcess
+        ? this.$audio.volume
+        : limitFrom
 
       // keep current time for normalization
       let time = Date.now()
 
+      this._isInProcess = true
       const tick = () => {
         // normalize time
         const currentTime = Date.now()
         const deltaTime = currentTime - time
         time = currentTime
 
-
-        // increment 
+        // increment
         if (isIncrement) {
-          if (Math.round(this._count) >= limitTo * 1000) {
+          if (this.$audio.volume >= limitTo) {
             clear()
-            this.$audio.volume = limitTo
             return
           }
-          this._count += deltaTime / duration
-          this.$audio.volume = Math.max(limitFrom, Math.min(this._count / 1000, limitTo))
-          log("this.$audio.volume", this.$audio.volume)
-        } 
-        
-        // decrement 
+          this._count = this._count + deltaTime / duration / 1000
+          this.$audio.volume = Math.max(limitFrom, Math.min(this._count, limitTo))
+          log("increment > this.$audio.volume", this.$audio.volume)
+        }
+
+        // decrement
         else {
-          if (Math.round(this._count) <= limitTo) {
+          if (this.$audio.volume <= limitTo) {
             clear()
-            this.$audio.volume = limitTo
             return
           }
 
-          this._count += (deltaTime / duration) * -1
-
-          this.$audio.volume = Math.max(limitTo, Math.min(this._count / 1000, limitFrom))
+          this._count -= deltaTime / duration / 1000
+          this.$audio.volume = Math.max(limitTo, Math.min(this._count, limitFrom))
           log("decrement > this.$audio.volume", this.$audio.volume)
         }
-      
+
         requestAnimationFrame(tick)
       }
 
       // start interval
       this._raf = requestAnimationFrame(tick)
     })
+
+    return {promise, clear}
   }
 }

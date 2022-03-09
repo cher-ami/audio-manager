@@ -33,16 +33,16 @@ const Player = ({ audiFileUrl }) => {
             <button className={css.button} onClick={() => sound.replay()}>
               Replay
             </button>
-            <button className={css.button} onClick={() => sound.fadeIn(2)}>
+            <button className={css.button} onClick={() => sound.fadeIn()}>
               FadeIn
             </button>
-            <button className={css.button} onClick={() => sound.fadeOut(2)}>
+            <button className={css.button} onClick={() => sound.fadeOut()}>
               FadeOut
             </button>
-            <button className={css.button} onClick={() => sound.fade(0.3, 0.9, 3)}>
+            <button className={css.button} onClick={() => sound.fade(0.3, 0.9, 1)}>
               Fade 0.3 - 0.9
             </button>
-            <button className={css.button} onClick={() => sound.fade(0.9, 0.3, 3)}>
+            <button className={css.button} onClick={() => sound.fade(0.9, 0.3, 1)}>
               Fade 0.9 - 0.3
             </button>
             <button className={css.button} onClick={() => sound.mute()}>
