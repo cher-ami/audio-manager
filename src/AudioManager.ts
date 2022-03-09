@@ -155,11 +155,7 @@ export class AudioManager {
     // play in case is not playing
     this.play()
 
-    const newProcess = this.processVolume(from, to, duration);
-    this._processVolumeArray.forEach(process => process.clear?.())
-    this._processVolumeArray.push(newProcess)
-
-    await newProcess.promise()
+    await this.processVolume(from, to, duration)
     log("fade ended!", this.$audio.volume)
   }
 
@@ -206,9 +202,9 @@ export class AudioManager {
     const limitFrom = Math.max(0, Math.min(from, 1))
     const limitTo = Math.max(0, Math.min(to, 1))
 
-    let clear;
-    const promise = () => new Promise((resolve: any) => {
-        clear = () => {
+
+    return new Promise((resolve: any) => {
+        const clear = () => {
         cancelAnimationFrame(this._raf)
         log("CLEAR > this.$audio.volume", this.$audio.volume)
         resolve()
@@ -261,6 +257,5 @@ export class AudioManager {
       this._raf = requestAnimationFrame(tick)
     })
 
-    return {promise, clear}
   }
 }
