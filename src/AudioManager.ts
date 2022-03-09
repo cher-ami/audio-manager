@@ -90,7 +90,7 @@ export class AudioManager {
     }
 
     if (this.isPlaying) {
-      log('play > is already playIn, return')
+      log("play > is already playIn, return")
       return
     }
     this.$audio.play()
@@ -140,6 +140,22 @@ export class AudioManager {
     this.options.loop = false
   }
 
+
+  /**
+   * fade 
+   * Process fade between 2 points
+   * @param from 1 = 100%, 0 = 0%
+   * @param to 1 = 100%, 0 = 0%
+   * @param duration In second
+   */
+  public async fade(from:number, to:number, duration = 1): Promise<any> {
+    log("fade")
+    // play in case is not playing
+    this.play()
+    await this.processVolume("increment", duration)
+    log("fadeIn ended!")
+  }
+
   public async fadeIn(duration = 1): Promise<any> {
     log("fadeIn")
     this.play()
@@ -162,7 +178,6 @@ export class AudioManager {
   // ---------------------–---------------------–---------------------–------------------- UTILS
 
   protected _raf
-  protected _currVolume
   protected _count = 0
 
   protected processVolume(type: "increment" | "decrement", duration = 1) {
