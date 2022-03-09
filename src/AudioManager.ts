@@ -1,5 +1,6 @@
 import debug from "@wbe/debug"
 import { deferredPromise, TDeferredPromise } from "@wbe/deferred-promise"
+import { resolve } from "path"
 const log = debug(`AudioManager`)
 
 export class AudioManager {
@@ -88,7 +89,10 @@ export class AudioManager {
       this.audioCtx.resume()
     }
 
-    if (this.isPlaying) return
+    if (this.isPlaying) {
+      log('play > is already playIn, return')
+      return
+    }
     this.$audio.play()
     this.isPlaying = true
   }
@@ -136,12 +140,16 @@ export class AudioManager {
     this.options.loop = false
   }
 
-  public fadeIn(duration = 1) {
+  public async fadeIn(duration = 1): Promise<any> {
     log("fadeIn")
+    this.play()
+    await this.processVolume("increment", duration)
+    log("fadeIn ended!")
   }
 
-  public fadeOut(duration = 1) {
+  public async fadeOut(duration = 1): Promise<any> {
     log("fadeOut")
+    await this.processVolume("decrement", duration)
   }
 
   public destroy() {
@@ -149,5 +157,71 @@ export class AudioManager {
     this.pause()
     this.track?.disconnect()
     this.$audio = null
+  }
+
+  // ---------------------–---------------------–---------------------–------------------- UTILS
+
+  protected _raf
+  protected _currVolume
+  protected _count = 0
+
+  protected processVolume(type: "increment" | "decrement", duration = 1) {
+    return new Promise((resolve: any) => {
+      // clear interval
+      const clear = () => {
+        log("clear interval")
+        cancelAnimationFrame(this._raf)
+        resolve()
+      }
+
+      // keep current time for normalization
+      let time = Date.now()
+
+      const tick = () => {
+        // normalize time
+        const currentTime = Date.now()
+        const deltaTime = currentTime - time
+        time = currentTime
+
+        if (type === "increment") {
+          // if progress ended
+          if (Math.round(this._count) >= this.options.volume * 1000) {
+            clear()
+            this.$audio.volume = 1
+            return
+          }
+
+          log("deltaTime", deltaTime)
+          // normalize
+          this._count += deltaTime / duration
+          this.$audio.volume = Math.max(0, Math.min(this._count / 1000, 1))
+
+          log("this._count", this._count)
+          log("this.$audio.volume", this.$audio.volume)
+        }
+
+        if (type === "decrement") {
+          // if progress ended
+          if (Math.round(this._count) <= 0) {
+            clear()
+            this.$audio.volume = 0
+            return
+          }
+
+          log("deltaTime", deltaTime)
+          // normalize
+          this._count -= deltaTime / duration
+          this.$audio.volume = Math.max(0, Math.min(this._count / 1000, 1))
+
+          log("this._count", this._count)
+          log("this.$audio.volume", this.$audio.volume)
+        }
+
+        requestAnimationFrame(tick)
+      }
+
+      // start interval
+      this._raf = requestAnimationFrame(tick)
+    })
   }
 }

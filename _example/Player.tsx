@@ -10,7 +10,6 @@ const Player = ({ audiFileUrl }) => {
   useEffect(() => {
     const instance = new AudioManager(audiFileUrl, { loop: false })
     setSound(instance)
-
     return () => {
       instance.destroy()
     }
