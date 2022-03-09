@@ -1,0 +1,36 @@
+.root {
+  .container {
+    .wrapper {
+      margin: 24px 0;
+
+      h2 {
+        margin: 0 0 12px 0;
+      }
+      p {
+        font-weight: 300;
+        font-style: italic;
+        margin: 0 0 12px 0;
+      }
+    }
+  }
+
+  button {
+    cursor: pointer;
+    margin: 4px;
+    padding: 8px 16px;
+    border: 1px solid blue;
+    color: blue;
+    background-color: white;
+    transition: all 0.1s ease-in-out;
+
+    &:hover {
+      color: white;
+      background-color: blue;
+    }
+  }
+
+  .active {
+    color: white;
+    background-color: blue;
+  }
+}
