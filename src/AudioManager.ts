@@ -140,32 +140,32 @@ export class AudioManager {
     this.options.loop = false
   }
 
-
   /**
-   * fade 
+   * fade
    * Process fade between 2 points
    * @param from 1 = 100%, 0 = 0%
    * @param to 1 = 100%, 0 = 0%
    * @param duration In second
    */
-  public async fade(from:number, to:number, duration = 1): Promise<any> {
+  public async fade(from: number, to: number, duration = 1): Promise<any> {
     log("fade")
     // play in case is not playing
     this.play()
-    await this.processVolume("increment", duration)
-    log("fadeIn ended!")
+    await this.processVolume(from, to, duration)
+    log("fade ended!")
   }
 
   public async fadeIn(duration = 1): Promise<any> {
     log("fadeIn")
     this.play()
-    await this.processVolume("increment", duration)
+    await this.processVolume(0, this.options.volume, duration)
     log("fadeIn ended!")
   }
 
   public async fadeOut(duration = 1): Promise<any> {
     log("fadeOut")
-    await this.processVolume("decrement", duration)
+    await this.processVolume(this.options.volume, 0, duration)
+    log("fadeOut ended!")
   }
 
   public destroy() {
@@ -180,7 +180,11 @@ export class AudioManager {
   protected _raf
   protected _count = 0
 
-  protected processVolume(type: "increment" | "decrement", duration = 1) {
+  protected processVolume(from: number, to: number, duration = 1) {
+
+    const limitFrom = Math.max(0, Math.min(from, 1))
+    const limitTo = Math.max(0, Math.min(to, 1))
+
     return new Promise((resolve: any) => {
       // clear interval
       const clear = () => {
@@ -188,6 +192,9 @@ export class AudioManager {
         cancelAnimationFrame(this._raf)
         resolve()
       }
+      // chose volume direction
+      //const type = from <= to ? "increment" : "decrement"
+      const isIncrement = limitFrom <= limitTo
 
       // keep current time for normalization
       let time = Date.now()
@@ -198,40 +205,33 @@ export class AudioManager {
         const deltaTime = currentTime - time
         time = currentTime
 
-        if (type === "increment") {
-          // if progress ended
-          if (Math.round(this._count) >= this.options.volume * 1000) {
+
+        // increment 
+        if (isIncrement) {
+          if (Math.round(this._count) >= limitTo * 1000) {
             clear()
-            this.$audio.volume = 1
+            this.$audio.volume = limitTo
             return
           }
-
-          log("deltaTime", deltaTime)
-          // normalize
           this._count += deltaTime / duration
-          this.$audio.volume = Math.max(0, Math.min(this._count / 1000, 1))
-
-          log("this._count", this._count)
+          this.$audio.volume = Math.max(limitFrom, Math.min(this._count / 1000, limitTo))
           log("this.$audio.volume", this.$audio.volume)
-        }
-
-        if (type === "decrement") {
-          // if progress ended
-          if (Math.round(this._count) <= 0) {
+        } 
+        
+        // decrement 
+        else {
+          if (Math.round(this._count) <= limitTo) {
             clear()
-            this.$audio.volume = 0
+            this.$audio.volume = limitTo
             return
           }
 
-          log("deltaTime", deltaTime)
-          // normalize
-          this._count -= deltaTime / duration
-          this.$audio.volume = Math.max(0, Math.min(this._count / 1000, 1))
+          this._count += (deltaTime / duration) * -1
 
-          log("this._count", this._count)
-          log("this.$audio.volume", this.$audio.volume)
+          this.$audio.volume = Math.max(limitTo, Math.min(this._count / 1000, limitFrom))
+          log("decrement > this.$audio.volume", this.$audio.volume)
         }
-
+      
         requestAnimationFrame(tick)
       }
 
