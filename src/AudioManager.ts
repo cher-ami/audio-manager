@@ -1,6 +1,6 @@
 import debug from "@wbe/debug"
 import { deferredPromise, TDeferredPromise } from "@wbe/deferred-promise"
-import { resolve } from "path"
+import { gsap } from "gsap"
 const log = debug(`AudioManager`)
 
 export class AudioManager {
@@ -147,29 +147,29 @@ export class AudioManager {
    * @param to 1 = 100%, 0 = 0%
    * @param duration In second
    */
-  protected _processVolumeArray = []
-
-  public async fade(from: number, to: number, duration = 1): Promise<any> {
+  public async fade(from: number, to: number, duration = 1, ease = "none"): Promise<any> {
     log("fade >", from, to, this.options)
 
     // play in case is not playing
     this.play()
 
-    await this.processVolume(from, to, duration)
+    await this.processVolume(from, to, duration, ease)
     log("fade ended!", this.$audio.volume)
   }
 
-  public async fadeIn(duration = 1): Promise<any> {
+  public async fadeIn(duration = 1, ease = "none"): Promise<any> {
     log("fadeIn")
+
+    // play in case is not playing
     this.play()
-    
-    await this.processVolume(0, this.options.volume, duration)
+
+    await this.processVolume(0, this.options.volume, duration, ease)
     log("fadeIn ended!")
   }
 
-  public async fadeOut(duration = 1): Promise<any> {
+  public async fadeOut(duration = 1, ease = "none"): Promise<any> {
     log("fadeOut")
-    await this.processVolume(this.options.volume, 0, duration)
+    await this.processVolume(this.options.volume, 0, duration, ease)
     log("fadeOut ended!")
   }
 
@@ -182,80 +182,43 @@ export class AudioManager {
 
   // ---------------------–---------------------–---------------------–------------------- UTILS
 
-  protected _raf
-  protected _count = 0
-  protected _isInProcess: boolean
+  protected _volumeIsInProcess: boolean
 
   /**
-   *
+   * process volume mutation
    * @param from
    * @param to
    * @param duration
+   * @param ease
    * @returns
    */
 
-  protected processVolume(from: number, to: number, duration = 1) {
-    // if (this._isInProcess) {
-    //   log("is in process, reject")
-    // }
-
+  protected processVolume(from: number, to: number, duration = 1, ease: string = "none") {
+    // limit
     const limitFrom = Math.max(0, Math.min(from, 1))
     const limitTo = Math.max(0, Math.min(to, 1))
 
-
     return new Promise((resolve: any) => {
-        const clear = () => {
-        cancelAnimationFrame(this._raf)
-        log("CLEAR > this.$audio.volume", this.$audio.volume)
-        resolve()
-        this._isInProcess = false
-      }
-
-      // chose volume direction
-      const isIncrement = limitFrom <= limitTo
-      this.$audio.volume = this._count = this._isInProcess
-        ? this.$audio.volume
-        : limitFrom
-
-      // keep current time for normalization
-      let time = Date.now()
-
-      this._isInProcess = true
-      const tick = () => {
-        // normalize time
-        const currentTime = Date.now()
-        const deltaTime = currentTime - time
-        time = currentTime
-
-        // increment
-        if (isIncrement) {
-          if (this.$audio.volume >= limitTo) {
-            clear()
-            return
-          }
-          this._count = this._count + deltaTime / duration / 1000
-          this.$audio.volume = Math.max(limitFrom, Math.min(this._count, limitTo))
-          log("increment > this.$audio.volume", this.$audio.volume)
+      gsap.fromTo(
+        this.$audio,
+        {
+          volume: this._volumeIsInProcess ? this.$audio.volume : limitFrom,
+        },
+        {
+          volume: limitTo,
+          overwrite: true,
+          ease,
+          duration,
+          onUpdate: () => {
+            this._volumeIsInProcess = true
+            log("this.$audio.volume", this.$audio.volume)
+          },
+          onComplete: () => {
+            this._volumeIsInProcess = false
+            resolve()
+          },
         }
-
-        // decrement
-        else {
-          if (this.$audio.volume <= limitTo) {
-            clear()
-            return
-          }
-
-          this._count -= deltaTime / duration / 1000
-          this.$audio.volume = Math.max(limitTo, Math.min(this._count, limitFrom))
-          log("decrement > this.$audio.volume", this.$audio.volume)
-        }
-
-        requestAnimationFrame(tick)
-      }
-
-      // start interval
-      this._raf = requestAnimationFrame(tick)
+      )
     })
-
   }
 }
