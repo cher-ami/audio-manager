@@ -7,7 +7,7 @@ const Player = ({ audiFileUrl }) => {
 
   useEffect(() => {
     return () => {
-      sound.destroy()
+      if (sound) sound.destroy()
     }
   }, [])
 
