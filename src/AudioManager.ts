@@ -26,7 +26,7 @@ export type TAudioManagerOptions = {
   // preload?: boolean
   // html5?: boolean
   // delay?: number // ms
-  // sprite?: any
+  sprite?: any
 };
 
 // --------------------------------------------------------------------------- MANAGER
