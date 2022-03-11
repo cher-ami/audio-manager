@@ -19,15 +19,15 @@ export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false)
  */
 
 export type TAudioManagerOptions = {
-  volume?: number
-  loop?: boolean
+  volume?: number;
+  loop?: boolean;
   // TODO: Figure out which options we would like to implement next
   // autoplay?: boolean
   // preload?: boolean
   // html5?: boolean
   // delay?: number // ms
-  sprite?: any
-}
+  // sprite?: any
+};
 
 // --------------------------------------------------------------------------- MANAGER
 
@@ -175,8 +175,6 @@ export class AudioManager {
     this.$audio.volume = this.options.volume;
     this.isMuted = false;
   }
-
-  public muteAllInstances(muteState: boolean = MUTE_AUDIO_SIGNAL.state): void {}
 
   public enableLoop(): void {
     log("loop");

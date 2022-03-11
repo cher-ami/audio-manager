@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React from "react"
 import { useAudio } from "../src/hooks"
 import css from "./Player.module.less"
 
