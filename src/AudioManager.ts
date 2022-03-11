@@ -12,13 +12,6 @@ const log = debug(`AudioManager`);
 
 export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false);
 
-let WIDTH = window.innerWidth;
-let HEIGHT = window.innerHeight;
-
-let xPos = Math.floor(WIDTH / 2);
-let yPos = Math.floor(HEIGHT / 2);
-let zPos = 295;
-
 // --------------------------------------------------------------------------- TYPES
 
 /**
@@ -54,7 +47,10 @@ export class AudioManager {
   protected listener: AudioListener;
   protected $audio: HTMLAudioElement;
   protected track: MediaElementAudioSourceNode;
+
+  // --------------------------------- WIP: Pitch function
   protected source: AudioBufferSourceNode;
+  // ---------------------------------
 
   public isLoading: boolean;
   public isLoaded: boolean;
@@ -88,8 +84,12 @@ export class AudioManager {
 
     this.canplayPromise = deferredPromise();
 
-    this.load();
-    this.initEvent();
+    // --------------------------------- WIP: Pitch function
+    // this.load();
+    // this.initEvent();
+
+    this.loadSample(audioFileUrl).then(sample => this.playSample(sample, 0.5));
+    // ---------------------------------
   }
 
   protected load() {
@@ -109,6 +109,28 @@ export class AudioManager {
     // Order is important when connecting
     this.track.connect(this.panner).connect(this.audioCtx.destination);
   }
+
+  // --------------------------------- WIP: Pitch function
+  protected loadSample = (url) => {
+    console.log("LOAD")
+    const AudioContext = window.AudioContext || window["webkitAudioContext"];
+    this.audioCtx = new AudioContext();
+    this.source = this.audioCtx.createBufferSource();
+
+    return fetch(url)
+      .then(response => response.arrayBuffer())
+      .then(buffer => this.audioCtx.decodeAudioData(buffer));
+  }
+
+  protected playSample = (sample, rate) => {
+    console.log("PLAY")
+    this.source.buffer = sample;
+    this.source.playbackRate.value = rate;
+    this.source.connect(this.audioCtx.destination);
+    this.source.start(0);
+  }
+  // ---------------------------------
+  
 
   // ---------------------–---------------------–---------------------–------------------- EVENTS
   protected initEvent() {
@@ -209,7 +231,7 @@ export class AudioManager {
 
   /**
    * pan
-   * Used to place the sound on a device supporting stereo sound.
+   * Used to "place" the sound on a device supporting stereo sound.
    * If using -1 to 1 range. -1 would be far left & 1 far right.
    *
    * @param vPan Value of pan, idealy from -1 to 1
@@ -221,13 +243,16 @@ export class AudioManager {
 
   /**
    * pitch
-   *
+   * 
    * @param vPitch Value of pitch, idealy from 0.1 to 10
+   * 
+   * TODO: We have to work with the playbackRate property of an AudioBufferSourceNode
+   * At the moment our sound is a MediaElementAudioSourceNode, which has no playbackRate property
    */
    public pitch(vPitch: number): void {
     log("pitch", vPitch);
-    
-    // this.track.playbackRate.value = vPitch;
+
+    this.source.playbackRate.value = vPitch;
     // console.log("PITCH", this.track.playbackRate.value);
   }
 
