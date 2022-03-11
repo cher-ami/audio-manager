@@ -69,6 +69,16 @@ const Player = ({ audiFileUrl }) => {
               step="0.01"
               onChange={(e) => sound.pan(parseFloat(e.target.value))}
             ></input>
+            <label>PITCH</label>
+            <input
+              type="range"
+              name="pitch"
+              min="0.1"
+              max="10"
+              defaultValue="1"
+              step="0.1"
+              onChange={(e) => sound.pitch(parseFloat(e.target.value))}
+            ></input>
           </div>
         </div>
       </div>

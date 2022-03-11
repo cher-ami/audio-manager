@@ -54,6 +54,7 @@ export class AudioManager {
   protected listener: AudioListener;
   protected $audio: HTMLAudioElement;
   protected track: MediaElementAudioSourceNode;
+  protected source: AudioBufferSourceNode;
 
   public isLoading: boolean;
   public isLoaded: boolean;
@@ -208,14 +209,26 @@ export class AudioManager {
 
   /**
    * pan
-   * Used to place the sound on a device supporting stereo sound. 
+   * Used to place the sound on a device supporting stereo sound.
    * If using -1 to 1 range. -1 would be far left & 1 far right.
-   * 
+   *
    * @param vPan Value of pan, idealy from -1 to 1
    */
   public pan(vPan: number): void {
     log("pan", vPan);
     this.panner.pan.value = vPan;
+  }
+
+  /**
+   * pitch
+   *
+   * @param vPitch Value of pitch, idealy from 0.1 to 10
+   */
+   public pitch(vPitch: number): void {
+    log("pitch", vPitch);
+    
+    // this.track.playbackRate.value = vPitch;
+    // console.log("PITCH", this.track.playbackRate.value);
   }
 
   /**
