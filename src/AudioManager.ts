@@ -169,6 +169,7 @@ export class AudioManager {
   public mute(): void {
     log("mute", this.$audio.volume);
     if (this.isMuted) return;
+    
     this.$audio.volume = 0;
     this.isMuted = true;
   }
