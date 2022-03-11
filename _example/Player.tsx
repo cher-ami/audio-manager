@@ -1,20 +1,13 @@
 import React, { useEffect, useRef, useState } from "react"
 import css from "./Player.module.less"
-import { AudioManager } from "../src/AudioManager"
 import { useAudio } from "../src/hooks"
 
 const Player = ({ audiFileUrl }) => {
-  // const sound = useAudio(applause, { volume: 0.8, loop: true });
-  // const heartbeatSound = useAudio(heartbeat, { volume: 0.8 });
-  
-  const [sound, setSound] = useState<AudioManager>(null)
+  const sound = useAudio(audiFileUrl, { loop: true })
 
   useEffect(() => {
-    const instance = new AudioManager(audiFileUrl, { loop: true })
-    setSound(instance)
-    
     return () => {
-      instance.destroy()
+      sound.destroy()
     }
   }, [])
 

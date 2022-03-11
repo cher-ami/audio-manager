@@ -1,14 +1,47 @@
 import { StateSignal } from "@solid-js/signal";
-import debug from "@wbe/debug";
 import { deferredPromise, TDeferredPromise } from "@wbe/deferred-promise";
+import debug from "@wbe/debug";
 import { gsap } from "gsap";
 const log = debug(`AudioManager`);
 
+// --------------------------------------------------------------------------- GLOBAL
+
+/**
+ * Global Signal state
+ */
+
 export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false);
+
+// --------------------------------------------------------------------------- TYPES
+
+/**
+ * Declare types for audio options
+ */
+
+export type TAudioManagerOptions = {
+  volume?: number;
+  loop?: boolean;
+  // TODO: Figure out which options we would like to implement next
+  // autoplay?: boolean
+  // preload?: boolean
+  // html5?: boolean
+  // delay?: number // ms
+  // sprite?: any
+};
+
+// --------------------------------------------------------------------------- MANAGER
+
+/**
+ * AudioManager controls a single instance, a single sound
+ *
+ * @dep @wbe/debug https://www.npmjs.com/package/@wbe/debug
+ * @dep @wbe/deferred-promise https://www.npmjs.com/package/@wbe/deferred-promise
+ * @dep @solid-js/signal https://www.npmjs.com/package/@solid-js/signal
+ */
 
 export class AudioManager {
   protected audioFileUrl: string;
-  protected options: any;
+  protected options: TAudioManagerOptions;
   protected audioCtx: AudioContext;
   protected $audio: HTMLAudioElement;
   protected track: MediaElementAudioSourceNode;
@@ -26,7 +59,7 @@ export class AudioManager {
   ) {
     this.audioFileUrl = audioFileUrl;
 
-    const defaultOptions = {
+    const defaultOptions: TAudioManagerOptions = {
       volume: 1,
       loop: false,
     };
@@ -35,6 +68,7 @@ export class AudioManager {
       ...defaultOptions,
       ...options,
     };
+
     log("options", this.options);
 
     this.isPlaying = false;
@@ -67,8 +101,7 @@ export class AudioManager {
     this.$audio.addEventListener("canplay", this.handleCanplay);
     this.$audio.addEventListener("ended", this.handleEnded);
 
-    MUTE_AUDIO_SIGNAL.on(this.handleMuteAll.bind(this)
-    );
+    MUTE_AUDIO_SIGNAL.on(this.handleMuteAll.bind(this));
   }
 
   protected handleCanplay = () => {
@@ -147,8 +180,6 @@ export class AudioManager {
     this.isMuted = false;
   }
 
-  public muteAllInstances(muteState: boolean = MUTE_AUDIO_SIGNAL.state): void {}
-
   public enableLoop(): void {
     log("loop");
     this.options.loop = true;
@@ -175,7 +206,9 @@ export class AudioManager {
     log("fade >", from, to, this.options);
 
     // play in case is not playing
-    this.play();
+    if (!this.isPlaying) {
+      this.play();
+    }
 
     await this.processVolume(from, to, duration, ease);
     log("fade ended!", this.$audio.volume);

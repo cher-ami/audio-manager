@@ -1,6 +1,10 @@
 import { AudioManager, MUTE_AUDIO_SIGNAL } from "./AudioManager"
 import { useEffect, useState } from "react"
 
+/**
+ * Return audio API instance for one audio file
+ */
+
 export const useAudio = (
   audiFileUrl: string,
   options?,
@@ -17,6 +21,10 @@ export const useAudio = (
 
   return instance
 }
+
+/**
+ * Dispatch an event to mute / unmute all existing instances
+ */
 
 export const useMuteAllAudio = (): [boolean, (isMuted: boolean) => void] => {
   const [isMuted, setIsMuted] = useState<boolean>(MUTE_AUDIO_SIGNAL.state)
