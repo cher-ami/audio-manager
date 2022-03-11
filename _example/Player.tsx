@@ -1,15 +1,15 @@
-import React, { useEffect } from "react"
-import { useAudio } from "../src/hooks"
-import css from "./Player.module.less"
+import React, { useEffect } from "react";
+import { useAudio } from "../src/hooks";
+import css from "./Player.module.less";
 
 const Player = ({ audiFileUrl }) => {
-  const sound = useAudio(audiFileUrl, { loop: true, volume: 0.2 })
+  const sound = useAudio(audiFileUrl, { loop: true, volume: 0.2 });
 
   useEffect(() => {
     return () => {
-      if (sound) sound.destroy()
-    }
-  }, [])
+      if (sound) sound.destroy();
+    };
+  }, []);
 
   return (
     <div className={css.root}>
@@ -35,10 +35,16 @@ const Player = ({ audiFileUrl }) => {
             <button className={css.button} onClick={() => sound.fadeOut()}>
               FadeOut
             </button>
-            <button className={css.button} onClick={() => sound.fade(0.3, 0.9, 1)}>
+            <button
+              className={css.button}
+              onClick={() => sound.fade(0.3, 0.9, 1)}
+            >
               Fade 0.3 - 0.9
             </button>
-            <button className={css.button} onClick={() => sound.fade(0.9, 0.3, 1)}>
+            <button
+              className={css.button}
+              onClick={() => sound.fade(0.9, 0.3, 1)}
+            >
               Fade 0.9 - 0.3
             </button>
             <button className={css.button} onClick={() => sound.mute()}>
@@ -53,11 +59,21 @@ const Player = ({ audiFileUrl }) => {
             <button className={css.button} onClick={() => sound.disableLoop()}>
               disable loop
             </button>
+            <label>PANNER</label>
+            <input
+              type="range"
+              name="panner"
+              min="-1"
+              max="1"
+              defaultValue="0"
+              step="0.01"
+              onChange={(e) => sound.pan(parseFloat(e.target.value))}
+            ></input>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Player
+export default Player;

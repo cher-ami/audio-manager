@@ -12,6 +12,13 @@ const log = debug(`AudioManager`);
 
 export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false);
 
+let WIDTH = window.innerWidth;
+let HEIGHT = window.innerHeight;
+
+let xPos = Math.floor(WIDTH / 2);
+let yPos = Math.floor(HEIGHT / 2);
+let zPos = 295;
+
 // --------------------------------------------------------------------------- TYPES
 
 /**
@@ -26,7 +33,7 @@ export type TAudioManagerOptions = {
   // preload?: boolean
   // html5?: boolean
   // delay?: number // ms
-  sprite?: any
+  // sprite?: any
 };
 
 // --------------------------------------------------------------------------- MANAGER
@@ -43,6 +50,8 @@ export class AudioManager {
   protected audioFileUrl: string;
   protected options: TAudioManagerOptions;
   protected audioCtx: AudioContext;
+  protected panner: StereoPannerNode;
+  protected listener: AudioListener;
   protected $audio: HTMLAudioElement;
   protected track: MediaElementAudioSourceNode;
 
@@ -83,15 +92,21 @@ export class AudioManager {
   }
 
   protected load() {
+    // ---------- AUDIO CONTEXT
     // for cross browser
     const AudioContext = window.AudioContext || window["webkitAudioContext"];
     this.audioCtx = new AudioContext();
 
-    // load audio
-    this.$audio = new Audio(this.audioFileUrl);
-    const track = this.audioCtx.createMediaElementSource(this.$audio);
+    // ---------- PANNER
+    const pannerOptions = { pan: 0 };
+    this.panner = new StereoPannerNode(this.audioCtx, pannerOptions);
 
-    track.connect(this.audioCtx.destination);
+    // ---------- LOAD AUDIO
+    this.$audio = new Audio(this.audioFileUrl);
+    this.track = this.audioCtx.createMediaElementSource(this.$audio);
+
+    // Order is important when connecting
+    this.track.connect(this.panner).connect(this.audioCtx.destination);
   }
 
   // ---------------------–---------------------–---------------------–------------------- EVENTS
@@ -169,7 +184,7 @@ export class AudioManager {
   public mute(): void {
     log("mute", this.$audio.volume);
     if (this.isMuted) return;
-    
+
     this.$audio.volume = 0;
     this.isMuted = true;
   }
@@ -189,6 +204,18 @@ export class AudioManager {
   public disableLoop(): void {
     log("disable loop");
     this.options.loop = false;
+  }
+
+  /**
+   * pan
+   * Used to place the sound on a device supporting stereo sound. 
+   * If using -1 to 1 range. -1 would be far left & 1 far right.
+   * 
+   * @param vPan Value of pan, idealy from -1 to 1
+   */
+  public pan(vPan: number): void {
+    log("pan", vPan);
+    this.panner.pan.value = vPan;
   }
 
   /**
