@@ -119,12 +119,8 @@ export class AudioManager {
     }
   }
 
-  protected handleMuteAll = () => {
-    if (MUTE_AUDIO_SIGNAL.state) {
-      this.mute()
-    } else {
-      this.unmute()
-    }
+  protected handleMuteAll = (mute: boolean): void => {
+    mute ? this.mute() : this.unmute()
   }
 
   // ---------------------–---------------------–---------------------–------------------- API
