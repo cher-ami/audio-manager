@@ -12,12 +12,12 @@ const log = debug(`AudioManager`)
 
 export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false)
 
-let WIDTH = window.innerWidth;
-let HEIGHT = window.innerHeight;
+let WIDTH = window.innerWidth
+let HEIGHT = window.innerHeight
 
-let xPos = Math.floor(WIDTH / 2);
-let yPos = Math.floor(HEIGHT / 2);
-let zPos = 295;
+let xPos = Math.floor(WIDTH / 2)
+let yPos = Math.floor(HEIGHT / 2)
+let zPos = 295
 
 // --------------------------------------------------------------------------- TYPES
 
@@ -26,15 +26,15 @@ let zPos = 295;
  */
 
 export type TAudioManagerOptions = {
-  volume?: number;
-  loop?: boolean;
+  volume?: number
+  loop?: boolean
   // TODO: Figure out which options we would like to implement next
   // autoplay?: boolean
   // preload?: boolean
   // html5?: boolean
   // delay?: number // ms
   // sprite?: any
-};
+}
 
 // --------------------------------------------------------------------------- MANAGER
 
@@ -47,20 +47,20 @@ export type TAudioManagerOptions = {
  */
 
 export class AudioManager {
-  protected audioFileUrl: string;
-  protected options: TAudioManagerOptions;
-  protected audioCtx: AudioContext;
-  protected panner: StereoPannerNode;
-  protected listener: AudioListener;
-  protected $audio: HTMLAudioElement;
-  protected track: MediaElementAudioSourceNode;
+  protected audioFileUrl: string
+  protected options: TAudioManagerOptions
+  protected audioCtx: AudioContext
+  protected panner: StereoPannerNode
+  protected listener: AudioListener
+  protected $audio: HTMLAudioElement
+  protected track: MediaElementAudioSourceNode
 
-  public isLoading: boolean;
-  public isLoaded: boolean;
-  public isPlaying: boolean;
-  public isMuted: boolean;
+  public isLoading: boolean
+  public isLoaded: boolean
+  public isPlaying: boolean
+  public isMuted: boolean
 
-  public canplayPromise: TDeferredPromise<void>;
+  public canplayPromise: TDeferredPromise<void>
 
   constructor(
     audioFileUrl: string,
@@ -71,7 +71,7 @@ export class AudioManager {
     const defaultOptions: TAudioManagerOptions = {
       volume: 1,
       loop: false,
-    };
+    }
 
     this.options = {
       ...defaultOptions,
@@ -80,38 +80,38 @@ export class AudioManager {
 
     log("options", this.options)
 
-    this.isPlaying = false;
-    this.isLoading = true;
-    this.isLoaded = false;
-    this.isMuted = false;
+    this.isPlaying = false
+    this.isLoading = true
+    this.isLoaded = false
+    this.isMuted = false
 
-    this.canplayPromise = deferredPromise();
+    this.canplayPromise = deferredPromise()
 
-    this.load();
-    this.initEvent();
+    this.load()
+    this.initEvent()
   }
 
   protected load() {
     // ---------- AUDIO CONTEXT
     // for cross browser
-    const AudioContext = window.AudioContext || window["webkitAudioContext"];
-    this.audioCtx = new AudioContext();
+    const AudioContext = window.AudioContext || window["webkitAudioContext"]
+    this.audioCtx = new AudioContext()
 
     // ---------- PANNER
-    const pannerOptions = { pan: 0 };
-    this.panner = new StereoPannerNode(this.audioCtx, pannerOptions);
+    const pannerOptions = { pan: 0 }
+    this.panner = new StereoPannerNode(this.audioCtx, pannerOptions)
 
     // ---------- LOAD AUDIO
-    this.$audio = new Audio(this.audioFileUrl);
-    this.track = this.audioCtx.createMediaElementSource(this.$audio);
+    this.$audio = new Audio(this.audioFileUrl)
+    this.track = this.audioCtx.createMediaElementSource(this.$audio)
 
     // Order is important when connecting
-    this.track.connect(this.panner).connect(this.audioCtx.destination);
+    this.track.connect(this.panner).connect(this.audioCtx.destination)
   }
 
   // ---------------------–---------------------–---------------------–------------------- EVENTS
   protected initEvent() {
-    if (!this.$audio) return;
+    if (!this.$audio) return
     // if track ends
     this.$audio.addEventListener("canplay", this.handleCanplay)
     this.$audio.addEventListener("ended", this.handleEnded)
@@ -119,18 +119,18 @@ export class AudioManager {
   }
 
   protected handleCanplay = () => {
-    log("canplay");
-    this.canplayPromise.resolve();
-    this.isLoading = false;
-    this.isLoaded = true;
-  };
+    log("canplay")
+    this.canplayPromise.resolve()
+    this.isLoading = false
+    this.isLoaded = true
+  }
 
   protected handleEnded = () => {
-    log("ended");
-    this.isPlaying = false;
+    log("ended")
+    this.isPlaying = false
 
     if (this.options.loop) {
-      this.play();
+      this.play()
     }
   };
   
@@ -141,76 +141,76 @@ export class AudioManager {
   // ---------------------–---------------------–---------------------–------------------- API
 
   public async play(): Promise<void> {
-    log("play", this.options);
-    await this.canplayPromise.promise;
+    log("play", this.options)
+    await this.canplayPromise.promise
 
     // check if context is in suspended state (autoplay policy)
     if (this.audioCtx.state === "suspended") {
-      this.audioCtx.resume();
+      this.audioCtx.resume()
     }
 
     if (this.isPlaying) {
-      log("play > is already playIn, return");
-      return;
+      log("play > is already playIn, return")
+      return
     }
-    this.$audio.play();
-    this.isPlaying = true;
+    this.$audio.play()
+    this.isPlaying = true
   }
 
   public pause() {
-    if (!this.isPlaying) return;
-    this.$audio.pause();
-    this.isPlaying = false;
+    if (!this.isPlaying) return
+    this.$audio.pause()
+    this.isPlaying = false
   }
 
   public stop() {
-    log("stop");
-    this.$audio.pause();
-    this.$audio.currentTime = 0;
-    this.isPlaying = false;
+    log("stop")
+    this.$audio.pause()
+    this.$audio.currentTime = 0
+    this.isPlaying = false
   }
 
   public replay() {
-    log("replay");
-    this.stop();
-    this.play();
+    log("replay")
+    this.stop()
+    this.play()
   }
 
   public mute(): void {
-    log("mute", this.$audio.volume);
-    if (this.isMuted) return;
+    log("mute", this.$audio.volume)
+    if (this.isMuted) return
 
-    this.$audio.volume = 0;
-    this.isMuted = true;
+    this.$audio.volume = 0
+    this.isMuted = true
   }
 
   public unmute(): void {
-    log("unmute", this.$audio.volume);
-    if (!this.isMuted) return;
-    this.$audio.volume = this.options.volume;
-    this.isMuted = false;
+    log("unmute", this.$audio.volume)
+    if (!this.isMuted) return
+    this.$audio.volume = this.options.volume
+    this.isMuted = false
   }
 
   public enableLoop(): void {
-    log("loop");
-    this.options.loop = true;
+    log("loop")
+    this.options.loop = true
   }
 
   public disableLoop(): void {
-    log("disable loop");
-    this.options.loop = false;
+    log("disable loop")
+    this.options.loop = false
   }
 
   /**
    * pan
-   * Used to place the sound on a device supporting stereo sound. 
+   * Used to place the sound on a device supporting stereo sound.
    * If using -1 to 1 range. -1 would be far left & 1 far right.
-   * 
+   *
    * @param vPan Value of pan, idealy from -1 to 1
    */
   public pan(vPan: number): void {
-    log("pan", vPan);
-    this.panner.pan.value = vPan;
+    log("pan", vPan)
+    this.panner.pan.value = vPan
   }
 
   /**
@@ -233,24 +233,24 @@ export class AudioManager {
       this.play()
     }
 
-    await this.processVolume(from, to, duration, ease);
-    log("fade ended!", this.$audio.volume);
+    await this.processVolume(from, to, duration, ease)
+    log("fade ended!", this.$audio.volume)
   }
 
   public async fadeIn(duration = 1, ease = "none"): Promise<any> {
-    log("fadeIn");
+    log("fadeIn")
 
     // play in case is not playing
-    this.play();
+    this.play()
 
-    await this.processVolume(0, this.options.volume, duration, ease);
-    log("fadeIn ended!");
+    await this.processVolume(0, this.options.volume, duration, ease)
+    log("fadeIn ended!")
   }
 
   public async fadeOut(duration = 1, ease = "none"): Promise<any> {
-    log("fadeOut");
-    await this.processVolume(this.options.volume, 0, duration, ease);
-    log("fadeOut ended!");
+    log("fadeOut")
+    await this.processVolume(this.options.volume, 0, duration, ease)
+    log("fadeOut ended!")
   }
 
   public destroy() {
@@ -263,7 +263,7 @@ export class AudioManager {
 
   // ---------------------–---------------------–---------------------–------------------- UTILS
 
-  protected _volumeIsInProcess: boolean;
+  protected _volumeIsInProcess: boolean
 
   /**
    * process volume mutation
@@ -281,8 +281,8 @@ export class AudioManager {
     ease: string = "none"
   ) {
     // limit
-    const limitFrom = Math.max(0, Math.min(from, 1));
-    const limitTo = Math.max(0, Math.min(to, 1));
+    const limitFrom = Math.max(0, Math.min(from, 1))
+    const limitTo = Math.max(0, Math.min(to, 1))
 
     return new Promise((resolve: any) => {
       gsap.fromTo(
@@ -296,15 +296,15 @@ export class AudioManager {
           ease,
           duration,
           onUpdate: () => {
-            this._volumeIsInProcess = true;
-            log("this.$audio.volume", this.$audio.volume);
+            this._volumeIsInProcess = true
+            log("this.$audio.volume", this.$audio.volume)
           },
           onComplete: () => {
-            this._volumeIsInProcess = false;
-            resolve();
+            this._volumeIsInProcess = false
+            resolve()
           },
         }
-      );
-    });
+      )
+    })
   }
 }
