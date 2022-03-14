@@ -1,11 +1,47 @@
-import debug from "@wbe/debug"
+import { StateSignal } from "@solid-js/signal"
 import { deferredPromise, TDeferredPromise } from "@wbe/deferred-promise"
+import debug from "@wbe/debug"
 import { gsap } from "gsap"
 const log = debug(`AudioManager`)
 
+// --------------------------------------------------------------------------- GLOBAL
+
+/**
+ * Global Signal state
+ */
+
+export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false)
+
+// --------------------------------------------------------------------------- TYPES
+
+/**
+ * Declare types for audio options
+ */
+
+export type TAudioManagerOptions = {
+  volume?: number
+  loop?: boolean
+  // TODO: Figure out which options we would like to implement next
+  // autoplay?: boolean
+  // preload?: boolean
+  // html5?: boolean
+  // delay?: number // ms
+  sprite?: any
+}
+
+// --------------------------------------------------------------------------- MANAGER
+
+/**
+ * AudioManager controls a single instance, a single sound
+ *
+ * @dep @wbe/debug https://www.npmjs.com/package/@wbe/debug
+ * @dep @wbe/deferred-promise https://www.npmjs.com/package/@wbe/deferred-promise
+ * @dep @solid-js/signal https://www.npmjs.com/package/@solid-js/signal
+ */
+
 export class AudioManager {
   protected audioFileUrl: string
-  protected options: any
+  protected options: TAudioManagerOptions
   protected audioCtx: AudioContext
   protected $audio: HTMLAudioElement
   protected track: MediaElementAudioSourceNode
@@ -17,10 +53,13 @@ export class AudioManager {
 
   public canplayPromise: TDeferredPromise<void>
 
-  constructor(audioFileUrl: string, options: { volume?: number; loop?: boolean }) {
+  constructor(
+    audioFileUrl: string,
+    options: { volume?: number; loop?: boolean }
+  ) {
     this.audioFileUrl = audioFileUrl
 
-    const defaultOptions = {
+    const defaultOptions: TAudioManagerOptions = {
       volume: 1,
       loop: false,
     }
@@ -29,6 +68,7 @@ export class AudioManager {
       ...defaultOptions,
       ...options,
     }
+
     log("options", this.options)
 
     this.isPlaying = false
@@ -60,6 +100,7 @@ export class AudioManager {
     // if track ends
     this.$audio.addEventListener("canplay", this.handleCanplay)
     this.$audio.addEventListener("ended", this.handleEnded)
+    MUTE_AUDIO_SIGNAL.on(this.handleMuteAll)
   }
 
   protected handleCanplay = () => {
@@ -75,6 +116,14 @@ export class AudioManager {
 
     if (this.options.loop) {
       this.play()
+    }
+  }
+
+  protected handleMuteAll = () => {
+    if (MUTE_AUDIO_SIGNAL.state) {
+      this.mute()
+    } else {
+      this.unmute()
     }
   }
 
@@ -119,6 +168,7 @@ export class AudioManager {
   public mute(): void {
     log("mute", this.$audio.volume)
     if (this.isMuted) return
+
     this.$audio.volume = 0
     this.isMuted = true
   }
@@ -147,11 +197,18 @@ export class AudioManager {
    * @param to 1 = 100%, 0 = 0%
    * @param duration In second
    */
-  public async fade(from: number, to: number, duration = 1, ease = "none"): Promise<any> {
+  public async fade(
+    from: number,
+    to: number,
+    duration = 1,
+    ease = "none"
+  ): Promise<any> {
     log("fade >", from, to, this.options)
 
     // play in case is not playing
-    this.play()
+    if (!this.isPlaying) {
+      this.play()
+    }
 
     await this.processVolume(from, to, duration, ease)
     log("fade ended!", this.$audio.volume)
@@ -178,6 +235,7 @@ export class AudioManager {
     this.pause()
     this.track?.disconnect()
     this.$audio = null
+    MUTE_AUDIO_SIGNAL.off(this.handleMuteAll)
   }
 
   // ---------------------–---------------------–---------------------–------------------- UTILS
@@ -193,7 +251,12 @@ export class AudioManager {
    * @returns
    */
 
-  protected processVolume(from: number, to: number, duration = 1, ease: string = "none") {
+  protected processVolume(
+    from: number,
+    to: number,
+    duration = 1,
+    ease: string = "none"
+  ) {
     // limit
     const limitFrom = Math.max(0, Math.min(from, 1))
     const limitTo = Math.max(0, Math.min(to, 1))
