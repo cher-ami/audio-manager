@@ -100,7 +100,7 @@ export class AudioManager {
     // if track ends
     this.$audio.addEventListener("canplay", this.handleCanplay)
     this.$audio.addEventListener("ended", this.handleEnded)
-    MUTE_AUDIO_SIGNAL.on(this.handleMuteAll.bind(this))
+    MUTE_AUDIO_SIGNAL.on(this.handleMuteAll)
   }
 
   protected handleCanplay = () => {
@@ -235,7 +235,7 @@ export class AudioManager {
     this.pause()
     this.track?.disconnect()
     this.$audio = null
-    MUTE_AUDIO_SIGNAL.off(this.handleMuteAll.bind(this))
+    MUTE_AUDIO_SIGNAL.off(this.handleMuteAll)
   }
 
   // ---------------------–---------------------–---------------------–------------------- UTILS
