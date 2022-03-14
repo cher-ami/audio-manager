@@ -5,12 +5,6 @@ import css from "./Player.module.less"
 const Player = ({ audiFileUrl }) => {
   const sound = useAudio(audiFileUrl, { loop: true, volume: 0.2 })
 
-  useEffect(() => {
-    return () => {
-      if (sound) sound.destroy()
-    }
-  }, [])
-
   return (
     <div className={css.root}>
       <div className={css.container}>
