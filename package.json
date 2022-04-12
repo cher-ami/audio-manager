@@ -1,5 +1,5 @@
 {
-  "name": "audio-manager",
+  "name": "@wbe/audio-manager",
   "description": "A simple web audio manager",
   "private": false,
   "version": "0.1.1",
