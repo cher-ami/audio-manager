@@ -26,7 +26,6 @@ export type TAudioManagerOptions = {
   // preload?: boolean
   // html5?: boolean
   // delay?: number // ms
-  sprite?: any
 }
 
 // --------------------------------------------------------------------------- MANAGER
@@ -37,12 +36,15 @@ export type TAudioManagerOptions = {
  * @dep @wbe/debug https://www.npmjs.com/package/@wbe/debug
  * @dep @wbe/deferred-promise https://www.npmjs.com/package/@wbe/deferred-promise
  * @dep @solid-js/signal https://www.npmjs.com/package/@solid-js/signal
+ * @dep @gsap https://greensock.com/gsap/
  */
 
 export class AudioManager {
   protected audioFileUrl: string
   protected options: TAudioManagerOptions
   protected audioCtx: AudioContext
+  protected panner: StereoPannerNode
+  protected listener: AudioListener
   protected $audio: HTMLAudioElement
   protected track: MediaElementAudioSourceNode
 
@@ -83,19 +85,26 @@ export class AudioManager {
   }
 
   protected load() {
-    // for cross browser
+  
+    // Audio context for cross browser
     const AudioContext = window.AudioContext || window["webkitAudioContext"]
     this.audioCtx = new AudioContext()
 
-    // load audio
-    this.$audio = new Audio(this.audioFileUrl)
-    const track = this.audioCtx.createMediaElementSource(this.$audio)
+    // Panner
+    const pannerOptions = { pan: 0 }
+    this.panner = new StereoPannerNode(this.audioCtx, pannerOptions)
 
-    track.connect(this.audioCtx.destination)
+    // Load audio
+    this.$audio = new Audio(this.audioFileUrl)
+    this.track = this.audioCtx.createMediaElementSource(this.$audio)
+
+    // Order is important when connecting
+    this.track.connect(this.panner).connect(this.audioCtx.destination)
   }
 
   // ---------------------–---------------------–---------------------–------------------- EVENTS
-  protected initEvent() {
+
+  protected initEvent(): void {
     if (!this.$audio) return
     // if track ends
     this.$audio.addEventListener("canplay", this.handleCanplay)
@@ -117,8 +126,8 @@ export class AudioManager {
     if (this.options.loop) {
       this.play()
     }
-  }
-
+  };
+  
   protected handleMuteAll = (mute: boolean): void => {
     mute ? this.mute() : this.unmute()
   }
@@ -184,6 +193,18 @@ export class AudioManager {
   public disableLoop(): void {
     log("disable loop")
     this.options.loop = false
+  }
+
+  /**
+   * pan
+   * Used to place the sound on a device supporting stereo sound.
+   * If using -1 to 1 range. -1 would be far left & 1 far right.
+   *
+   * @param vPan Value of pan, idealy from -1 to 1
+   */
+  public pan(vPan: number): void {
+    log("pan", vPan)
+    this.panner.pan.value = vPan
   }
 
   /**
