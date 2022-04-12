@@ -3,31 +3,46 @@
   "description": "A simple web audio manager",
   "private": false,
   "version": "0.1.0",
+  "types": "dist/index.d.ts",
+  "source": "src/index.ts",
+  "main": "./dist/index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
+    "dev:example": "vite",
+    "dev": "microbundle --watch --jsx React.createElement",
+    "build": "npm run clean && microbundle --jsx React.createElement",
+    "serve": "vite preview",
+    "clean": "rm -rf ./dist && rm -rf tsconfig.tsbuildinfo",
+    "size": "size-limit",
+    "pre-publish": "npm run clean && npm run build && npm run size"
   },
+  "size-limit": [
+    {
+      "limit": "2 kB",
+      "path": "dist/index.js"
+    }
+  ],
   "author": "cher-ami",
   "license": "MIT",
   "dependencies": {
     "@wbe/debug": "^1.0.0",
-    "gsap": "^3.9.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "gsap": "^3.10.3",
+    "@wbe/deferred-promise": "^2.4.0",
+    "@solid-js/signal": "^1.0.2"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "@solid-js/signal": "^1.0.2",
-    "@types/node": "^17.0.21",
-    "@types/react": "^17.0.40",
-    "@types/react-dom": "^17.0.13",
-    "@vitejs/plugin-react": "^1.2.0",
-    "@wbe/deferred-promise": "^2.4.0",
-    "howler": "^2.2.3",
-    "lerna": "^4.0.0",
+    "microbundle": "^0.14.2",
+    "@size-limit/file": "^7.0.8",
+    "@types/node": "^17.0.23",
+    "@types/react": "^18.0.2",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^1.3.0",
     "less": "^4.1.2",
-    "prettier": "^2.5.1",
-    "typescript": "^4.6.2",
-    "vite": "^2.8.6"
+    "prettier": "^2.6.2",
+    "typescript": "^4.6.3",
+    "vite": "^2.9.1"
   }
 }
