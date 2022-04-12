@@ -1,11 +1,25 @@
 {
   "name": "@cher-ami/audio-manager",
   "description": "A simple web audio manager",
-  "private": false,
   "version": "0.1.1",
+  "author": "cher-ami",
+  "license": "MIT",
   "types": "dist/index.d.ts",
   "source": "src/index.ts",
   "main": "./dist/index.js",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cher-ami/audio-manager.git"
+  },
+  "keywords": [
+    "audio",
+    "manager",
+    "web-audio"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev:example": "vite",
     "dev": "microbundle --watch --jsx React.createElement",
@@ -21,8 +35,6 @@
       "path": "dist/index.js"
     }
   ],
-  "author": "cher-ami",
-  "license": "MIT",
   "dependencies": {
     "@wbe/debug": "^1.0.0",
     "gsap": "^3.10.3",
