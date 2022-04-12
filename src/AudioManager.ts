@@ -12,13 +12,6 @@ const log = debug(`AudioManager`)
 
 export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false)
 
-let WIDTH = window.innerWidth
-let HEIGHT = window.innerHeight
-
-let xPos = Math.floor(WIDTH / 2)
-let yPos = Math.floor(HEIGHT / 2)
-let zPos = 295
-
 // --------------------------------------------------------------------------- TYPES
 
 /**
@@ -33,7 +26,6 @@ export type TAudioManagerOptions = {
   // preload?: boolean
   // html5?: boolean
   // delay?: number // ms
-  // sprite?: any
 }
 
 // --------------------------------------------------------------------------- MANAGER
@@ -44,6 +36,7 @@ export type TAudioManagerOptions = {
  * @dep @wbe/debug https://www.npmjs.com/package/@wbe/debug
  * @dep @wbe/deferred-promise https://www.npmjs.com/package/@wbe/deferred-promise
  * @dep @solid-js/signal https://www.npmjs.com/package/@solid-js/signal
+ * @dep @gsap https://greensock.com/gsap/
  */
 
 export class AudioManager {
@@ -92,16 +85,16 @@ export class AudioManager {
   }
 
   protected load() {
-    // ---------- AUDIO CONTEXT
-    // for cross browser
+  
+    // Audio context for cross browser
     const AudioContext = window.AudioContext || window["webkitAudioContext"]
     this.audioCtx = new AudioContext()
 
-    // ---------- PANNER
+    // Panner
     const pannerOptions = { pan: 0 }
     this.panner = new StereoPannerNode(this.audioCtx, pannerOptions)
 
-    // ---------- LOAD AUDIO
+    // Load audio
     this.$audio = new Audio(this.audioFileUrl)
     this.track = this.audioCtx.createMediaElementSource(this.$audio)
 
@@ -110,7 +103,8 @@ export class AudioManager {
   }
 
   // ---------------------–---------------------–---------------------–------------------- EVENTS
-  protected initEvent() {
+
+  protected initEvent(): void {
     if (!this.$audio) return
     // if track ends
     this.$audio.addEventListener("canplay", this.handleCanplay)
