@@ -1,0 +1,15 @@
+.idea
+.cache
+.parcel-cache
+node_modules
+src
+test
+stories
+_example
+.babelrc
+.github
+.prettierrc
+.gitignore
+.npmignore
+screen.jpg
+tsconfig.json
