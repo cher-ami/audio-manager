@@ -1,8 +1,8 @@
-# audio manager
+# Audio manager
 
 A simple web audio manager for the browser.
 
-## depedencies
+## Depedencies
 
 - [@wbe/debug](https://www.npmjs.com/package/@wbe/debug)
 - [@wbe/deferred-promise](https://www.npmjs.com/package/@wbe/)
@@ -15,7 +15,7 @@ A simple web audio manager for the browser.
 npm install @cher-ami/audio-manager
 ```
 
-## usage
+## Usage
 
 Create new AudioManager instance:
 
@@ -39,7 +39,7 @@ sound.fadeOut()
 sound.destroy()
 ```
 
-Multiples instances can be create together:
+Multiples instances can be created together:
 
 ```js
 import { AudioManager } from "@cher-ami/audio-manager"
