@@ -225,6 +225,55 @@ MUTE_AUDIO_SIGNAL.dispatch(true)
 MUTE_AUDIO_SIGNAL.dispatch(false)
 ```
 
+## React usage
+
+Audio manager come with react hooks to use it in react components.
+
+### useAudio
+
+```js
+const App = () => {
+  // create audio manager instance with useAudio
+  const sound = useAudio("audio.mp3", { loop: true, volume: 0.5 })
+
+  //  use API in handlers
+  return (
+    <div>
+      <button onClick={sound.play}>Play</button>
+      <button onClick={sound.pause}>Pause</button>
+    </div>
+  )
+}
+```
+
+### useMuteAllAudio
+
+Mute all sounds with `useMuteAllAudio`
+
+```js
+const [isMuted, setIsMuted] = useMuteAllAudio()
+
+useEffect(() => {
+  // do something when isMuted state change
+}, [isMuted])
+
+//  use API in handlers
+return (
+  <div>
+    <button onClick={setIsMuted(true)}>mute</button>
+    <button onClick={setIsMuted(false)}>unmute</button>
+  </div>
+)
+```
+
+## Example
+
+Start example
+
+```shell
+npm run dev:example
+```
+
 ## Credits
 
 cher-ami
