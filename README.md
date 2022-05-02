@@ -2,7 +2,7 @@
 
 A simple web audio manager for the browser.
 
-## Depedencies
+## Dependencies
 
 - [@wbe/debug](https://www.npmjs.com/package/@wbe/debug)
 - [@wbe/deferred-promise](https://www.npmjs.com/package/@wbe/)
