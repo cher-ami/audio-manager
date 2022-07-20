@@ -33,7 +33,7 @@ export const useMuteAllAudio = (): [boolean, (isMuted: boolean) => void] => {
     const handler = (state: boolean) => {
       setIsMuted(state)
     }
-    return MUTE_AUDIO_SIGNAL.on(handler)
+    return MUTE_AUDIO_SIGNAL.add(handler)
   }, [])
 
   const setIsMutedState = (state: boolean) => {

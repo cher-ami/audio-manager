@@ -6,7 +6,7 @@ A simple web audio manager for the browser.
 
 - [@wbe/debug](https://www.npmjs.com/package/@wbe/debug)
 - [@wbe/deferred-promise](https://www.npmjs.com/package/@wbe/)
-- [@solid-js/signal](https://www.npmjs.com/package/@solid-js/signal)
+- [@zouloux/signal](https://www.npmjs.com/package/@zouloux/signal)
 - [gsap](https://greensock.com/gsap/)
 
 ## Installation
