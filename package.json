@@ -39,7 +39,7 @@
     "@wbe/debug": "^1.0.0",
     "gsap": "^3.10.3",
     "@wbe/deferred-promise": "^2.4.0",
-    "@solid-js/signal": "^1.0.2"
+    "@zouloux/signal": "^0.2.4"
   },
   "peerDependencies": {
     "react": "^18.0.0",

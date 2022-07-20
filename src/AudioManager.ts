@@ -1,4 +1,4 @@
-import { StateSignal } from "@solid-js/signal"
+import { StateSignal } from "@zouloux/signal"
 import { deferredPromise, TDeferredPromise } from "@wbe/deferred-promise"
 import debug from "@wbe/debug"
 import { gsap } from "gsap"
@@ -109,7 +109,7 @@ export class AudioManager {
     // if track ends
     this.$audio.addEventListener("canplay", this.handleCanplay)
     this.$audio.addEventListener("ended", this.handleEnded)
-    MUTE_AUDIO_SIGNAL.on(this.handleMuteAll)
+    MUTE_AUDIO_SIGNAL.add(this.handleMuteAll)
   }
 
   protected handleCanplay = () => {
@@ -252,7 +252,7 @@ export class AudioManager {
     this.pause()
     this.track?.disconnect()
     this.$audio = null
-    MUTE_AUDIO_SIGNAL.off(this.handleMuteAll)
+    MUTE_AUDIO_SIGNAL.remove(this.handleMuteAll)
   }
 
   // ---------------------–---------------------–---------------------–------------------- UTILS
