@@ -13,3 +13,4 @@ _example
 .npmignore
 screen.jpg
 tsconfig.json
+vite.config.ts
