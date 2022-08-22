@@ -5,5 +5,8 @@ export default defineConfig(({ command, mode }) => {
   return {
     root: "_example",
     plugins: [react()],
+    server: {
+      host: true
+    }
   };
 });
