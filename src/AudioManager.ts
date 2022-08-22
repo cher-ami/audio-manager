@@ -85,7 +85,6 @@ export class AudioManager {
   }
 
   protected load() {
-  
     // Audio context for cross browser
     const AudioContext = window.AudioContext || window["webkitAudioContext"]
     this.audioCtx = new AudioContext()
@@ -111,6 +110,9 @@ export class AudioManager {
     this.$audio.addEventListener("canplay", this.handleCanplay)
     this.$audio.addEventListener("ended", this.handleEnded)
     MUTE_AUDIO_SIGNAL.add(this.handleMuteAll)
+
+    // because canplay doesn't fire on safari, need to call load() too
+    this.$audio.load()
   }
 
   protected handleCanplay = () => {
@@ -127,8 +129,8 @@ export class AudioManager {
     if (this.options.loop) {
       this.play()
     }
-  };
-  
+  }
+
   protected handleMuteAll = (mute: boolean): void => {
     mute ? this.mute() : this.unmute()
   }
@@ -138,6 +140,7 @@ export class AudioManager {
   public async play(): Promise<void> {
     log("play", this.options)
     await this.canplayPromise.promise
+    log("ici")
 
     // check if context is in suspended state (autoplay policy)
     if (this.audioCtx.state === "suspended") {
