@@ -57,7 +57,7 @@ export class AudioManager {
 
   constructor(
     audioFileUrl: string,
-    options: { volume?: number; loop?: boolean }
+    options: { volume?: number; loop?: boolean } = {}
   ) {
     this.audioFileUrl = audioFileUrl
 
