@@ -96,6 +96,7 @@ export class AudioManager {
 
     // Load audio
     this.$audio = new Audio(this.audioFileUrl)
+    this.$audio.crossOrigin = "anonymous"
     this.track = this.audioCtx.createMediaElementSource(this.$audio)
 
     // Order is important when connecting
