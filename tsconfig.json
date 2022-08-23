@@ -3,7 +3,7 @@
     "composite": false,
     "module": "esNext",
     "target": "es6",
-    "lib": ["dom"],
+    "lib": ["dom", "es2021"],
     "moduleResolution": "node",
     "types": ["vite" ,"node"],
     "jsx": "react",
