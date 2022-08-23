@@ -1,2 +1,2 @@
 export { AudioManager } from './AudioManager';
-export { useAudio } from './hooks';
+export { useAudio, useMuteAllAudio } from './hooks';
