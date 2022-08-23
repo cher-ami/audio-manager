@@ -148,8 +148,9 @@ export class AudioManager {
   // ---------------------–---------------------–---------------------–------------------- API
 
   public async play(): Promise<void> {
-    log(this.id, "play", this.options)
+    log(this.id, "waiting for canplayPromise...")
     await this.canplayPromise.promise
+    log(this.id, "play", this.options)
 
     // check if context is in suspended state (autoplay policy)
     if (this.audioCtx.state === "suspended") {
