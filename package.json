@@ -4,20 +4,13 @@
   "version": "0.1.7",
   "author": "cher-ami",
   "license": "MIT",
+  "main": "dist/index.js",
   "source": "src/index.ts",
-  "exports": {
-    "require": "./dist/index.cjs",
-    "default": "./dist/index.modern.js"
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.module.js",
-  "unpkg": "./dist/index.umd.js",
   "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/cher-ami/audio-manager.git"
   },
-  "type": "module",
   "keywords": [
     "audio",
     "manager",
@@ -38,7 +31,7 @@
   "size-limit": [
     {
       "limit": "2 kB",
-      "path": "dist/index.module.js"
+      "path": "dist/index.js"
     }
   ],
   "dependencies": {
