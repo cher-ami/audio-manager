@@ -36,22 +36,23 @@
   ],
   "dependencies": {
     "@wbe/debug": "^1.0.0",
-    "gsap": "^3.11.0",
     "@wbe/deferred-promise": "^2.4.0",
-    "@zouloux/signal": "^0.2.4"
+    "@zouloux/signal": "^0.2.4",
+    "gsap": "^3.11.0",
+    "howler": "^2.2.3"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^>=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
-    "microbundle": "^0.15.1",
     "@size-limit/file": "^8.0.1",
     "@types/node": "^18.7.9",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
     "@vitejs/plugin-react": "^2.0.1",
     "less": "^4.1.3",
+    "microbundle": "^0.15.1",
     "prettier": "^2.7.1",
     "typescript": "^4.7.4",
     "vite": "^3.0.9"

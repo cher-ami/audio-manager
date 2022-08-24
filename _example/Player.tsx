@@ -3,7 +3,7 @@ import { useAudio } from "../src/hooks"
 import css from "./Player.module.less"
 
 const Player = ({ audiFileUrl }) => {
-  const sound = useAudio(audiFileUrl, { loop: true, volume: 0.2 });
+  const sound = useAudio(audiFileUrl, { loop: false, volume: 0.2 });
 
   return (
     <div className={css.root}>
@@ -11,7 +11,7 @@ const Player = ({ audiFileUrl }) => {
         <div className={css.wrapper}>
           <h2 className={css.name}>{audiFileUrl}</h2>
           <div className={css.buttons}>
-            <button className={css.button} onClick={() => sound.play()}>
+            <button className={css.button} onClick={() => sound.play().then(()=> console.log('icicicici'))}>
               Play
             </button>
             <button className={css.button} onClick={() => sound.pause()}>

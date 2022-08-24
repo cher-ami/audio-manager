@@ -1,7 +1,7 @@
 import { StateSignal } from "@zouloux/signal"
 import { deferredPromise, TDeferredPromise } from "@wbe/deferred-promise"
 import debug from "@wbe/debug"
-import { gsap } from "gsap"
+import { Howl } from "howler"
 const log = debug(`AudioManager`)
 
 // --------------------------------------------------------------------------- GLOBAL
@@ -19,14 +19,13 @@ export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false)
  */
 
 export interface IAudioManagerOptions {
-  volume?: number
-  loop?: boolean
   id?: string
-  // TODO: Figure out which options we would like to implement next
-  // autoplay?: boolean
-  // preload?: boolean
-  // html5?: boolean
-  // delay?: number // ms
+  volume?: number
+  autoplay?: boolean
+  loop?: boolean
+  preload?: boolean
+  html5?: boolean
+  delay?: number
 }
 
 // --------------------------------------------------------------------------- MANAGER
@@ -37,18 +36,16 @@ export interface IAudioManagerOptions {
  * @dep @wbe/debug https://www.npmjs.com/package/@wbe/debug
  * @dep @wbe/deferred-promise https://www.npmjs.com/package/@wbe/deferred-promise
  * @dep @solid-js/signal https://www.npmjs.com/package/@solid-js/signal
- * @dep @gsap https://greensock.com/gsap/
  */
 
-let ID = 0
 export class AudioManager {
-  protected audioFileUrl: string
+  protected url: string
   protected options: IAudioManagerOptions
   protected audioCtx: AudioContext
   protected panner: StereoPannerNode
   protected listener: AudioListener
-  protected $audio: HTMLAudioElement
-  protected track: MediaElementAudioSourceNode
+
+  public sound: Howl
 
   public isLoading: boolean
   public isLoaded: boolean
@@ -57,12 +54,18 @@ export class AudioManager {
   public id: string
 
   public canplayPromise: TDeferredPromise<void>
+  public endedPromise: TDeferredPromise<void>
 
   constructor(audioFileUrl: string, options: IAudioManagerOptions = {}) {
-    this.audioFileUrl = audioFileUrl
-    const defaultOptions: IAudioManagerOptions = {
+    this.url = audioFileUrl
+
+    const defaultOptions = {
       volume: 1,
+      autoplay: false,
       loop: false,
+      preload: true,
+      html5: false,
+      delay: 0,
     }
 
     this.options = {
@@ -70,9 +73,7 @@ export class AudioManager {
       ...options,
     }
 
-    ID++
     this.id = [
-      ID + ".",
       this.options?.id && `${this.options?.id}__`,
       audioFileUrl.split("/")[audioFileUrl.split("/").length - 1],
       " - ",
@@ -86,95 +87,76 @@ export class AudioManager {
     this.isLoading = true
     this.isLoaded = false
     this.isMuted = false
-
     this.canplayPromise = deferredPromise()
+    this.endedPromise = deferredPromise()
 
     this.load()
-    this.initEvent()
+    this.initEvents()
   }
 
   protected load() {
-    // Audio context for cross browser
-    const AudioContext = window.AudioContext || window["webkitAudioContext"]
-    this.audioCtx = new AudioContext()
+    // load howler sound
+    this.sound = new Howl({
+      src: [this.url],
+      ...this.options,
+      onload: () => {
+        log(this.id, "canplay handler, audio is ready")
+        this.isLoaded = true
+        this.canplayPromise.resolve()
+        this.isLoading = false
+        this.isLoaded = true
+        if (this.isMuted) this.mute()
+      },
+    })
+  }
 
-    // Panner
-    const pannerOptions = { pan: 0 }
-    this.panner = new StereoPannerNode(this.audioCtx, pannerOptions)
+  protected initEvents(): void {
+    MUTE_AUDIO_SIGNAL.add(this.handleMuteAll)
+    this.sound.on("end", this.handleEnded)
+  }
 
-    // Load audio
-    this.$audio = new Audio(this.audioFileUrl)
-    this.$audio.crossOrigin = "anonymous"
-    this.$audio.volume = this.options.volume
-    this.track = this.audioCtx.createMediaElementSource(this.$audio)
-
-    // Order is important when connecting
-    this.track.connect(this.panner).connect(this.audioCtx.destination)
+  public destroy() {
+    log(this.id, "destroy")
+    this.sound.unload()
+    MUTE_AUDIO_SIGNAL.remove(this.handleMuteAll)
   }
 
   // ---------------------–---------------------–---------------------–------------------- EVENTS
-
-  protected initEvent(): void {
-    if (!this.$audio) return
-    // if track ends
-    this.$audio.addEventListener("canplay", this.handleCanplay)
-    this.$audio.addEventListener("ended", this.handleEnded)
-    MUTE_AUDIO_SIGNAL.add(this.handleMuteAll)
-
-    // because canplay doesn't fire on safari, need to call load() too
-    this.$audio.load()
-  }
-
-  protected handleCanplay = () => {
-    log(this.id, "canplay handler, audio is ready")
-    this.canplayPromise.resolve()
-    this.isLoading = false
-    this.isLoaded = true
-  }
-
-  protected handleEnded = () => {
-    log(this.id, "ended")
-    this.isPlaying = false
-
-    if (this.options.loop) {
-      this.play()
-    }
-  }
 
   protected handleMuteAll = (mute: boolean): void => {
     mute ? this.mute() : this.unmute()
   }
 
+  protected handleEnded = (): void => {
+    log(this.id, "ended")
+    this.isPlaying = false
+    this.endedPromise.resolve()
+    if (this.options.loop) {
+      this.play()
+    }
+    this.isPlaying = false
+  }
   // ---------------------–---------------------–---------------------–------------------- API
 
-  public async play(): Promise<void> {
+  public async play(key?: string): Promise<void> {
     log(this.id, "waiting for canplayPromise...")
     await this.canplayPromise.promise
+    this.endedPromise = deferredPromise()
     log(this.id, "play", this.options)
-
-    // check if context is in suspended state (autoplay policy)
-    if (this.audioCtx.state === "suspended") {
-      this.audioCtx.resume()
-    }
-
-    if (this.isPlaying) {
-      log(this.id, "play > is already playIn, return")
-      return
-    }
-    this.$audio.play()
+    await new Promise((r) => setTimeout(r, this.options.delay))
+    this.id = this.sound.play(key)
     this.isPlaying = true
+    return this.endedPromise.promise
   }
 
   public pause() {
-    if (!this.isPlaying) return
-    this.$audio.pause()
-    this.isPlaying = false
+    if (!this.isPlaying || !this.isLoaded) return
+    this.sound.pause()
   }
 
-  public stop() {
+  public async stop() {
     log(this.id, "stop")
-    this.$audio.pause()
-    this.$audio.currentTime = 0
+    this.sound.stop(this.id)
     this.isPlaying = false
   }
 
@@ -184,29 +166,72 @@ export class AudioManager {
     this.play()
   }
 
+  public async loop() {
+    if (!this.isLoaded) await this.canplayPromise.promise
+    this.sound.loop(true, this.id)
+    this.isPlaying = true
+  }
+
   public mute(): void {
-    log(this.id, "mute", this.$audio.volume)
+    log(this.id, "mute")
     if (this.isMuted) return
 
-    this.$audio.volume = 0
+    console.log("this.sound", this.sound)
+    this.sound.mute(true)
     this.isMuted = true
   }
 
   public unmute(): void {
-    log(this.id, "unmute", this.$audio.volume)
+    log(this.id, "unmute")
     if (!this.isMuted) return
-    this.$audio.volume = this.options.volume
+    this.sound.mute(false)
     this.isMuted = false
   }
 
+  public async fade(from: number, to: number, duration = 1000): Promise<void> {
+    if (!this.isLoaded) await this.canplayPromise.promise
+    log(this.id, "fade >", from, to, this.options)
+    // play in case is not playing
+    if (!this.isPlaying) this.play()
+
+    this.sound.fade(from, to, duration, this.id)
+    return new Promise((r) => setTimeout(r, duration))
+  }
+
+  public async fadeIn(duration: number = 1000): Promise<void> {
+    if (!this.isLoaded) await this.canplayPromise.promise
+    log(this.id, "fadeIn")
+    this.id = this.sound.play()
+    this.isPlaying = true
+    this.sound.fade(0, this.options.volume, duration, this.id)
+    return new Promise((r) => setTimeout(r, duration))
+  }
+
+  public async fadeOut(duration: number = 1000): Promise<void> {
+    if (!this.isLoaded) await this.canplayPromise.promise
+    log(this.id, "fadeOut")
+    this.isPlaying = false
+    this.sound.fade(this.options.volume, 0, duration, this.id)
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        this.stop()
+        resolve()
+      }, duration)
+    )
+  }
+
+  // TODO remove
   public enableLoop(): void {
-    log(this.id, "loop")
-    this.options.loop = true
+    console.warn("deprecated")
+    this.sound.loop()
+    // log(this.id, "loop")
+    // this.options.loop = true
   }
 
   public disableLoop(): void {
-    log(this.id, "disable loop")
-    this.options.loop = false
+    console.warn("deprecated")
+    // log(this.id, "disable loop")
+    // this.options.loop = false
   }
 
   /**
@@ -218,103 +243,7 @@ export class AudioManager {
    */
   public pan(vPan: number): void {
     log(this.id, "pan", vPan)
-    this.panner.pan.value = vPan
-  }
-
-  /**
-   * fade
-   * Process fade between 2 points
-   * @param from 1 = 100%, 0 = 0%
-   * @param to 1 = 100%, 0 = 0%
-   * @param duration In second
-   */
-  public async fade(
-    from: number,
-    to: number,
-    duration = 1,
-    ease = "none"
-  ): Promise<any> {
-    log(this.id, "fade >", from, to, this.options)
-
-    // play in case is not playing
-    if (!this.isPlaying) {
-      this.play()
-    }
-
-    await this.processVolume(from, to, duration, ease)
-    log(this.id, "fade ended!", this.$audio.volume)
-  }
-
-  public async fadeIn(duration = 1, ease = "none"): Promise<any> {
-    log(this.id, "fadeIn")
-
-    // play in case is not playing
-    this.play()
-
-    await this.processVolume(0, this.options.volume, duration, ease)
-    log(this.id, "fadeIn ended!")
-  }
-
-  public async fadeOut(duration = 1, ease = "none"): Promise<any> {
-    log(this.id, "fadeOut")
-    await this.processVolume(this.options.volume, 0, duration, ease)
-    log(this.id, "fadeOut ended!")
-  }
-
-  public destroy() {
-    log(this.id, "destroy")
-    this.pause()
-    this.track?.disconnect()
-    this.$audio = null
-    this.$audio?.removeEventListener("canplay", this.handleCanplay)
-    this.$audio?.removeEventListener("ended", this.handleEnded)
-    MUTE_AUDIO_SIGNAL.remove(this.handleMuteAll)
-  }
-
-  // ---------------------–---------------------–---------------------–------------------- UTILS
-
-  protected _volumeIsInProcess: boolean
-
-  /**
-   * process volume mutation
-   * @param from
-   * @param to
-   * @param duration
-   * @param ease
-   * @returns
-   */
-
-  protected processVolume(
-    from: number,
-    to: number,
-    duration = 1,
-    ease: string = "none"
-  ) {
-    // limit
-    const limitFrom = Math.max(0, Math.min(from, 1))
-    const limitTo = Math.max(0, Math.min(to, 1))
-
-    return new Promise((resolve: any) => {
-      gsap.fromTo(
-        this.$audio,
-        {
-          volume: this._volumeIsInProcess ? this.$audio.volume : limitFrom,
-        },
-        {
-          volume: limitTo,
-          overwrite: true,
-          ease,
-          duration,
-          onUpdate: () => {
-            this._volumeIsInProcess = true
-            log(this.id, "this.$audio.volume", this.$audio.volume)
-          },
-          onComplete: () => {
-            this._volumeIsInProcess = false
-            resolve()
-          },
-        }
-      )
-    })
+    console.warn("deprecated")
+    //this.panner.pan.value = vPan
   }
 }
