@@ -1,13 +1,13 @@
 # Audio manager
 
-A simple web audio manager for the browser.
+An Howler wrapper.
 
 ## Dependencies
 
 - [@wbe/debug](https://www.npmjs.com/package/@wbe/debug)
 - [@wbe/deferred-promise](https://www.npmjs.com/package/@wbe/)
 - [@zouloux/signal](https://www.npmjs.com/package/@zouloux/signal)
-- [gsap](https://greensock.com/gsap/)
+- [howler](https://howlerjs.com/)
 
 ## Installation
 
@@ -30,9 +30,6 @@ sound.stop()
 sound.replay()
 sound.mute()
 sound.unmute()
-sound.enableLoop()
-sound.disableLoop()
-sound.pan()
 sound.fade()
 sound.fadeIn()
 sound.fadeOut()
@@ -124,39 +121,6 @@ Unmute the sound if he is muted.
 sound.unmute()
 ```
 
-### enableLoop
-
-`enableLoop(): void`
-
-During the sound is playing, enable looping on it.
-
-```js
-sound.enableLoop()
-```
-
-### disableLoop
-
-`disableLoop(): void`
-
-During the sound is playing, disable looping on it.
-
-```js
-sound.disableLoop()
-```
-
-### pan
-
-`pan(vPan: number): void`
-
-Used to place the sound on a device supporting stereo sound.
-If using -1 to 1 range. -1 would be far left & 1 far right.
-
-```js
-sound.pan(-1) // left
-sound.pan(0) // center
-sound.pan(1) // right
-```
-
 ### fade
 
 `fade(from: number, to: number, duration = 1, ease = "none"): Promise<any>`
@@ -179,7 +143,7 @@ await this.fade(0, 0.6)
 
 ### fadeIn
 
-`fadeIn(duration = 1, ease = "none"): Promise<any>`
+`fadeIn(duration = 1, ease = "none"): Promise<void>`
 
 FadeIn from the current volum to 100%.
 
@@ -191,7 +155,7 @@ await this.fadeIn()
 
 ### fadeOut
 
-`fadeOut(duration = 1, ease = "none"): Promise<any>`
+`fadeOut(duration = 1, ease = "none"): Promise<void>`
 
 FadeOut from the current volum to 0%.
 
