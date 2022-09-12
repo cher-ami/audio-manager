@@ -1,13 +1,13 @@
 # Audio manager
 
-An Howler wrapper.
+A simple [Howler](https://howlerjs.com/) wrapper.
 
 ## Dependencies
 
-- [@wbe/debug](https://www.npmjs.com/package/@wbe/debug)
-- [@wbe/deferred-promise](https://www.npmjs.com/package/@wbe/)
-- [@zouloux/signal](https://www.npmjs.com/package/@zouloux/signal)
 - [howler](https://howlerjs.com/)
+- [@zouloux/signal](https://www.npmjs.com/package/@zouloux/signal)
+- [@wbe/deferred-promise](https://www.npmjs.com/package/@wbe/)
+- [@wbe/debug](https://www.npmjs.com/package/@wbe/debug)
 
 ## Installation
 
