@@ -1,9 +1,7 @@
-import { AudioManager } from "../src"
+import { AudioManager } from "@cher-ami/audio-manager"
 import applause from "./assets/applause.wav"
 import drumHitRim from "./assets/drum_hit_rim.mp3"
 import drumSnakeRoll from "./assets/drum_snake_roll.mp3"
-
-// ---------------------------------------------------------------------------------------
 
 export interface IAudioFile {
   name: EGameAudio
@@ -17,39 +15,39 @@ export enum EGameAudio {
   DRUM_HIT_RIM = "DRUM_HIT_RIM",
   DRUM_SNAKE_ROLL = "DRUM_SNAKE_ROLL",
 }
-const GLOBAL_CONFIG = {
-  audioVolume: 0.5,
-}
-
-export const AUDIO_FILES: IAudioFile[] = [
-  {
-    name: EGameAudio.APPLAUSE,
-    url: applause,
-    options: {
-      volume: GLOBAL_CONFIG.audioVolume,
-    },
-  },
-  {
-    name: EGameAudio.DRUM_HIT_RIM,
-    url: drumHitRim,
-    options: {
-      volume: GLOBAL_CONFIG.audioVolume,
-    },
-  },
-  {
-    name: EGameAudio.DRUM_SNAKE_ROLL,
-    url: drumSnakeRoll,
-    options: {
-      volume: GLOBAL_CONFIG.audioVolume,
-    },
-  },
-]
 
 /**
  * AudioService
  */
 class AudioService {
-  public audioFiles = AUDIO_FILES
+  public globalConfig = {
+    audioVolume: 0.5,
+  }
+
+  public audioFiles: IAudioFile[] = [
+    {
+      name: EGameAudio.APPLAUSE,
+      url: applause,
+      options: {
+        volume: this.globalConfig.audioVolume,
+      },
+    },
+    {
+      name: EGameAudio.DRUM_HIT_RIM,
+      url: drumHitRim,
+      options: {
+        volume: this.globalConfig.audioVolume,
+      },
+    },
+    {
+      name: EGameAudio.DRUM_SNAKE_ROLL,
+      url: drumSnakeRoll,
+      options: {
+        volume: this.globalConfig.audioVolume,
+      },
+    },
+  ]
+
   constructor() {
     // attach audio instance to each audio file obj
     this.audioFiles.forEach((file) => {

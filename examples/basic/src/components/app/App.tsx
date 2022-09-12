@@ -1,8 +1,8 @@
 import React from "react"
 import css from "./App.module.less"
-import Player from "./Player"
-import { useMuteAllAudio } from "../src"
-import AudioService, { EGameAudio } from "./AudioService"
+import Player from "../player/Player"
+import { useMuteAllAudio } from "../../../../../src"
+import AudioService, { EGameAudio } from "../../AudioService"
 
 const App = () => {
   const [isMuted, setIsMuted] = useMuteAllAudio()

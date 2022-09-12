@@ -5,7 +5,7 @@ node_modules
 src
 test
 stories
-_example
+examples
 .babelrc
 .github
 .prettierrc

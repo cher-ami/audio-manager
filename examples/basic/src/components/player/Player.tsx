@@ -1,7 +1,8 @@
 import React from "react"
 import css from "./Player.module.less"
+import { IAudioFile } from "../../AudioService"
 
-const Player = ({ audioFileObj }) => {
+const Player = ({ audioFileObj }: { audioFileObj: IAudioFile }) => {
   return (
     <div className={css.root}>
       <div className={css.container}>
@@ -11,9 +12,7 @@ const Player = ({ audioFileObj }) => {
             <button
               className={css.button}
               onClick={() =>
-                audioFileObj.instance
-                  .play()
-                  .then(() => console.log("end"))
+                audioFileObj.instance.play().then(() => console.log("end"))
               }
             >
               Play
