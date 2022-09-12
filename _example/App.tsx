@@ -1,24 +1,25 @@
-import React, { useEffect, useState } from "react"
+import React from "react"
 import css from "./App.module.less"
 import Player from "./Player"
-
-import drumHitRim from "./assets/drum_hit_rim.mp3"
-import drumSnakeRoll from "./assets/drum_snake_roll.mp3"
-import harpAscend from "./assets/harp_ascend.mp3"
-import heartbeat from "./assets/heartbeat.wav"
-import applause from "./assets/applause.wav"
-
-import { useMuteAllAudio } from "../src/hooks"
+import { useMuteAllAudio } from "../src"
+import AudioService, { EGameAudio } from "./AudioService"
 
 const App = () => {
-
   const [isMuted, setIsMuted] = useMuteAllAudio()
 
   return (
     <div className={css.root}>
-      <Player audiFileUrl={applause} />
-      <Player audiFileUrl={heartbeat} />
-      <Player audiFileUrl={drumSnakeRoll} />
+      <Player
+        audioFileObj={AudioService.getSoundObjByName(EGameAudio.APPLAUSE)}
+      />
+      <Player
+        audioFileObj={AudioService.getSoundObjByName(EGameAudio.DRUM_HIT_RIM)}
+      />
+      <Player
+        audioFileObj={AudioService.getSoundObjByName(
+          EGameAudio.DRUM_SNAKE_ROLL
+        )}
+      />
 
       <button onClick={() => setIsMuted(true)}>Mute All</button>
       <button onClick={() => setIsMuted(false)}>Unmute All</button>

@@ -21,12 +21,11 @@
   },
   "scripts": {
     "dev:example": "vite",
-    "dev": "microbundle --watch --jsx React.createElement",
+    "build:watch": "microbundle --watch --jsx React.createElement",
     "build": "npm run clean && microbundle --jsx React.createElement",
-    "serve": "vite preview",
     "clean": "rm -rf ./dist && rm -rf tsconfig.tsbuildinfo",
-    "size": "size-limit",
-    "pre-publish": "npm run clean && npm run build && npm run size"
+    "pre-publish": "npm run clean && npm run build && npm run size",
+    "size": "size-limit"
   },
   "size-limit": [
     {
