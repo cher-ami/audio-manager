@@ -22,6 +22,7 @@ export interface IAudioManagerOptions {
   preload?: boolean
   html5?: boolean
   delay?: number
+  onUpdate?: (time: number) => void
 }
 
 /**
@@ -46,6 +47,7 @@ export class AudioManager {
 
   public canplayPromise: TDeferredPromise<void>
   public endedPromise: TDeferredPromise<void>
+  protected raf: number
 
   constructor(audioFileUrl: string, options: IAudioManagerOptions = {}) {
     this.url = audioFileUrl
@@ -57,6 +59,7 @@ export class AudioManager {
       preload: true,
       html5: false,
       delay: 0,
+      onUpdate: null,
     }
 
     this.options = {
@@ -70,7 +73,6 @@ export class AudioManager {
     this.isMuted = false
     this.canplayPromise = deferredPromise()
     this.endedPromise = deferredPromise()
-
     this.load()
     this.initEvents()
   }
@@ -96,12 +98,6 @@ export class AudioManager {
     this.sound.on("end", this.handleEnded)
   }
 
-  public destroy() {
-    log(this.id, "destroy")
-    this.sound.unload()
-    MUTE_AUDIO_SIGNAL.remove(this.handleMuteAll)
-  }
-
   // ---------------------–---------------------–---------------------–------------------- EVENTS
 
   protected handleMuteAll = (mute: boolean): void => {
@@ -112,6 +108,10 @@ export class AudioManager {
     log(this.id, "ended")
     this.isPlaying = false
     this.endedPromise.resolve()
+
+    if (this.raf) {
+      this.cancelRaf()
+    }
   }
   // ---------------------–---------------------–---------------------–------------------- API
 
@@ -124,18 +124,29 @@ export class AudioManager {
 
     this.id = this.sound.play()
     this.isPlaying = true
+
+    if (this.options.onUpdate) {
+      this.raf = this.rafRender()
+    }
+
     return this.endedPromise.promise
   }
 
   public pause() {
     if (!this.isPlaying || !this.isLoaded) return
     this.sound.pause()
+    if (this.raf) {
+      this.cancelRaf()
+    }
   }
 
   public async stop() {
     log(this.id, "stop")
     this.sound.stop(this.id)
     this.isPlaying = false
+    if (this.raf) {
+      this.cancelRaf()
+    }
   }
 
   public replay() {
@@ -199,5 +210,23 @@ export class AudioManager {
         resolve()
       }, duration)
     )
+  }
+
+  public destroy() {
+    log(this.id, "destroy")
+    this.sound.unload()
+    MUTE_AUDIO_SIGNAL.remove(this.handleMuteAll)
+  }
+
+  protected rafRender() {
+    return requestAnimationFrame((time) => {
+      this.options.onUpdate?.(time)
+      this.raf = this.rafRender()
+    })
+  }
+
+  protected cancelRaf() {
+    cancelAnimationFrame(this.raf)
+    this.raf = null
   }
 }
