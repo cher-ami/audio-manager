@@ -22,6 +22,7 @@ export interface IAudioManagerOptions {
   preload?: boolean
   html5?: boolean
   delay?: number
+  onUpdate?: (time: number) => void
 }
 
 /**
@@ -43,9 +44,11 @@ export class AudioManager {
   public isPlaying: boolean
   public isMuted: boolean
   public id: string = null
+  protected nameSpace: string
 
   public canplayPromise: TDeferredPromise<void>
   public endedPromise: TDeferredPromise<void>
+  protected raf: number
 
   constructor(audioFileUrl: string, options: IAudioManagerOptions = {}) {
     this.url = audioFileUrl
@@ -57,6 +60,7 @@ export class AudioManager {
       preload: true,
       html5: false,
       delay: 0,
+      onUpdate: null,
     }
 
     this.options = {
@@ -64,15 +68,19 @@ export class AudioManager {
       ...options,
     }
 
+    this.nameSpace = this.getNameSpace(this.id, this.url)
     this.isPlaying = false
     this.isLoading = true
     this.isLoaded = false
     this.isMuted = false
     this.canplayPromise = deferredPromise()
     this.endedPromise = deferredPromise()
-
     this.load()
     this.initEvents()
+  }
+
+  protected getNameSpace(id, url): string {
+    return `${id} - ${url.replace(/^.*[\\\/]/, "")} -`
   }
 
   protected load() {
@@ -81,7 +89,7 @@ export class AudioManager {
       src: [this.url],
       ...this.options,
       onload: () => {
-        log(this.id, "canplay handler, audio is ready")
+        log(this.nameSpace, "canplay handler, audio is ready")
         this.isLoaded = true
         this.canplayPromise.resolve()
         this.isLoading = false
@@ -96,12 +104,6 @@ export class AudioManager {
     this.sound.on("end", this.handleEnded)
   }
 
-  public destroy() {
-    log(this.id, "destroy")
-    this.sound.unload()
-    MUTE_AUDIO_SIGNAL.remove(this.handleMuteAll)
-  }
-
   // ---------------------–---------------------–---------------------–------------------- EVENTS
 
   protected handleMuteAll = (mute: boolean): void => {
@@ -109,37 +111,53 @@ export class AudioManager {
   }
 
   protected handleEnded = (): void => {
-    log(this.id, "ended")
+    log(this.nameSpace, "ended")
     this.isPlaying = false
     this.endedPromise.resolve()
+
+    if (this.raf) {
+      this.cancelRaf()
+    }
   }
   // ---------------------–---------------------–---------------------–------------------- API
 
   public async play(): Promise<void> {
-    log(this.id, "waiting for canplayPromise...")
+    log(this.nameSpace, "waiting for canplayPromise...")
     await this.canplayPromise.promise
     this.endedPromise = deferredPromise()
-    log(this.id, "play", this.options)
+    log(this.nameSpace, "play", this.options)
     await new Promise((r) => setTimeout(r, this.options.delay))
 
     this.id = this.sound.play()
+    this.nameSpace = this.getNameSpace(this.id, this.url)
     this.isPlaying = true
+
+    if (this.options.onUpdate) {
+      this.raf = this.rafRender()
+    }
+
     return this.endedPromise.promise
   }
 
   public pause() {
     if (!this.isPlaying || !this.isLoaded) return
     this.sound.pause()
+    if (this.raf) {
+      this.cancelRaf()
+    }
   }
 
   public async stop() {
-    log(this.id, "stop")
+    log(this.nameSpace, "stop")
     this.sound.stop(this.id)
     this.isPlaying = false
+    if (this.raf) {
+      this.cancelRaf()
+    }
   }
 
   public replay() {
-    log(this.id, "replay")
+    log(this.nameSpace, "replay")
     this.stop()
     this.play()
   }
@@ -150,7 +168,7 @@ export class AudioManager {
   }
 
   public mute(): void {
-    log(this.id, "mute")
+    log(this.nameSpace, "mute")
     if (this.isMuted) return
 
     this.sound.mute(true)
@@ -158,14 +176,14 @@ export class AudioManager {
   }
 
   public unmute(): void {
-    log(this.id, "unmute")
+    log(this.nameSpace, "unmute")
     if (!this.isMuted) return
     this.sound.mute(false)
     this.isMuted = false
   }
 
   public async fade(from: number, to: number, duration = 1000): Promise<void> {
-    log(this.id, "fade >", from, to, this.options)
+    log(this.nameSpace, "fade >", from, to, this.options)
     // play in case is not playing
     if (!this.isPlaying) this.play()
 
@@ -176,13 +194,13 @@ export class AudioManager {
   public async fadeIn(duration: number = 1000): Promise<void> {
     // if (!this.isLoaded) await this.canplayPromise.promise
     this.id = this.sound.play()
-    log(this.id, `fadeIn 0 -> ${this.options.volume}`)
+    log(this.nameSpace, `fadeIn 0 -> ${this.options.volume}`)
     this.isPlaying = true
 
     this.sound.fade(0, this.options.volume, duration)
     return new Promise((r) =>
       setTimeout(() => {
-        log(this.id, "fadeIn ended")
+        log(this.nameSpace, "fadeIn ended")
         r()
       }, duration)
     )
@@ -190,14 +208,32 @@ export class AudioManager {
 
   public async fadeOut(duration: number = 1000): Promise<void> {
     // if (!this.isLoaded) await this.canplayPromise.promise
-    log(this.id, `fadeOut ${this.options.volume} -> 0`)
+    log(this.nameSpace, `fadeOut ${this.options.volume} -> 0`)
     this.sound.fade(this.options.volume, 0, duration)
     return new Promise((resolve) =>
       setTimeout(() => {
-        log(this.id, "fadeOut ended")
+        log(this.nameSpace, "fadeOut ended")
         this.stop()
         resolve()
       }, duration)
     )
+  }
+
+  public destroy() {
+    log(this.nameSpace, "destroy")
+    this.sound.unload()
+    MUTE_AUDIO_SIGNAL.remove(this.handleMuteAll)
+  }
+
+  protected rafRender() {
+    return requestAnimationFrame((time) => {
+      this.options.onUpdate?.(time)
+      this.raf = this.rafRender()
+    })
+  }
+
+  protected cancelRaf() {
+    cancelAnimationFrame(this.raf)
+    this.raf = null
   }
 }

@@ -30,6 +30,9 @@ class AudioService {
       url: applause,
       options: {
         volume: this.globalConfig.audioVolume,
+        onUpdate: (time) => {
+//          console.log("on update", time)
+        },
       },
     },
     {
