@@ -38,7 +38,6 @@
   ],
   "dependencies": {
     "@wbe/debug": "^1.0.0",
-    "@wbe/deferred-promise": "^2.4.0",
     "@zouloux/signal": "^0.2.4",
     "howler": "^2.2.3"
   },

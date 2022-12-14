@@ -6,7 +6,6 @@ A simple [Howler](https://howlerjs.com/) wrapper.
 
 - [howler](https://howlerjs.com/)
 - [@zouloux/signal](https://www.npmjs.com/package/@zouloux/signal)
-- [@wbe/deferred-promise](https://www.npmjs.com/package/@wbe/)
 - [@wbe/debug](https://www.npmjs.com/package/@wbe/debug)
 
 ## Installation

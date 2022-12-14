@@ -1,5 +1,5 @@
 import { StateSignal } from "@zouloux/signal"
-import { deferredPromise, TDeferredPromise } from "@wbe/deferred-promise"
+import { deferredPromise, TDeferredPromise } from "./helpers/deferred-promise"
 import { Howl } from "howler"
 import debug from "@wbe/debug"
 const log = debug(`AudioManager`)
