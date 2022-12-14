@@ -1,7 +1,7 @@
 {
   "name": "@cher-ami/audio-manager",
   "description": "A simple web audio manager",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "cher-ami",
   "license": "MIT",
   "type": "module",
