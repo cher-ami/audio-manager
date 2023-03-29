@@ -176,7 +176,7 @@ this.destroy()
 
 ## Golbal mute
 
-It's possible to mute all the paying sounds with global event emitter.
+It's possible to mute all the playing sounds with global event emitter.
 
 ```js
 import { MUTE_AUDIO_SIGNAL } from "@cher-ami/audio-manager"
