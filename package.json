@@ -38,7 +38,6 @@
   ],
   "dependencies": {
     "@cher-ami/debug": "^1.2.0",
-    "@zouloux/signal": "^0.2.4",
     "howler": "^2.2.3"
   },
   "peerDependencies": {
