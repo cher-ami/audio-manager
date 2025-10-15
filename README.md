@@ -5,8 +5,7 @@ A simple [Howler](https://howlerjs.com/) wrapper.
 ## Dependencies
 
 - [howler](https://howlerjs.com/)
-- [@zouloux/signal](https://www.npmjs.com/package/@zouloux/signal)
-- [@wbe/debug](https://www.npmjs.com/package/@wbe/debug)
+- [@cher-ami/debug](https://www.npmjs.com/package/@cher-ami/debug)
 
 ## Installation
 

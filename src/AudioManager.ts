@@ -1,14 +1,14 @@
-import { StateSignal } from "@zouloux/signal"
+import { Beeper } from "./helpers/Beeper"
 import { deferredPromise, TDeferredPromise } from "./helpers/deferred-promise"
 import { Howl } from "howler"
-import debug from "@wbe/debug"
+import debug from "@cher-ami/debug"
 const log = debug(`AudioManager`)
 
 /**
  * Global Signal state
  */
 
-export const MUTE_AUDIO_SIGNAL = StateSignal<boolean>(false)
+export const MUTE_AUDIO_SIGNAL = Beeper<boolean>(false)
 
 /**
  * Declare types for audio options
@@ -100,7 +100,7 @@ export class AudioManager {
   }
 
   protected initEvents(): void {
-    MUTE_AUDIO_SIGNAL.add(this.handleMuteAll)
+    MUTE_AUDIO_SIGNAL.on(this.handleMuteAll)
     this.sound.on("end", this.handleEnded)
   }
 
@@ -222,7 +222,7 @@ export class AudioManager {
   public destroy() {
     log(this.nameSpace, "destroy")
     this.sound.unload()
-    MUTE_AUDIO_SIGNAL.remove(this.handleMuteAll)
+    MUTE_AUDIO_SIGNAL.off(this.handleMuteAll)
   }
 
   protected rafRender() {
