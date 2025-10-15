@@ -1,6 +1,6 @@
 import { AudioManager, MUTE_AUDIO_SIGNAL, IAudioManagerOptions } from "./AudioManager"
 import { useEffect, useMemo, useState } from "react"
-import debug from "@wbe/debug"
+import debug from "@cher-ami/debug"
 const log = debug(`AudioManager:hooks`)
 
 /**
@@ -45,7 +45,7 @@ export const useMuteAllAudio = (): [boolean, (isMuted: boolean) => void] => {
     const handler = (state: boolean) => {
       setIsMuted(state)
     }
-    return MUTE_AUDIO_SIGNAL.add(handler) as any
+    return MUTE_AUDIO_SIGNAL.on(handler) as any
   }, [])
 
   const setIsMutedState = (state: boolean) => {
